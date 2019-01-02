@@ -1,0 +1,1 @@
+export { WebPet } from './web-pet/web-pet';
