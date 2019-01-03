@@ -1,5 +1,8 @@
-const containerTpl = `<div>pet</div>`;
+const container = 
+    `<div class="web-pet">
+    webpet
+    </div>`;
 
 export {
-    containerTpl
+    container
 }

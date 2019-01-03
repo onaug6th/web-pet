@@ -8,7 +8,14 @@
 <body>
 </body>
 <script>
-    const pet = new WebPet();
+    const options = {
+        hook: {
+            mounted: function () {
+                console.info("hey hey hey");
+            }
+        }
+    }
+    const pet = new WebPet(options);
 </script>
 
 </html>

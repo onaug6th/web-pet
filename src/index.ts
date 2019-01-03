@@ -1,1 +1,2 @@
-export { WebPet } from './web-pet/web-pet';
+import WebPet from './web-pet/web-pet';
+export { WebPet };
