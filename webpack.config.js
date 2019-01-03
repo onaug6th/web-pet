@@ -26,7 +26,7 @@ let plugins = [];
 /**
  * 初始化
  */
-;(function init(){
+; (function init() {
 
     const logger = console.log;
 
@@ -46,7 +46,7 @@ if (dev) {
              * html-webpack-plugin 也可以不指定 template 参数，它会使用默认的 html 模板。
              */
             template: './src/index.html',
-    
+
             /*
              * 因为和 webpack 4 的兼容性问题，chunksSortMode 参数需要设置为 none
              * https://github.com/jantimon/html-webpack-plugin/issues/870
@@ -99,6 +99,7 @@ module.exports = {
         */
         rules: [
             {
+                //  匹配 ts 文件
                 test: /\.ts$/,
                 use: [
                     {
@@ -108,6 +109,17 @@ module.exports = {
                         }
                     }
                 ]
+            },
+            {
+                // 匹配 css 文件
+                test: /\.css$/,
+
+                /*
+                 * 先使用 css-loader 处理，返回的结果交给 style-loader 处理。
+                 * css-loader 将 css 内容存为 js 字符串，并且会把 background, @font-face 等引用的图片，
+                 * 字体文件交给指定的 loader 打包，类似上面的 html-loader, 用什么 loader 同样在 loaders 对象中定义，等会下面就会看到。
+                 */
+                use: ['style-loader', 'css-loader']
             }
         ]
     },
@@ -131,18 +143,9 @@ module.exports = {
 if (dev) {
     module.exports.serve = {
         // 配置监听端口，默认值 8080
-        port: 8080,
+        port: 8989,
 
         // add: 用来给服务器的 koa 实例注入 middleware 增加功能
-        add: app => {
-            /*
-             * 配置 SPA 入口
-             * SPA 的入口是一个统一的 html 文件，比如
-             * http://localhost:8080/foo
-             * 我们要返回给它
-             * http://localhost:8080/index.html
-             * 这个文件
-             */
-        }
+        add: app => {}
     }
 }
