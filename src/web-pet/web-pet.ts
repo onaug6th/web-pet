@@ -1,6 +1,6 @@
 import * as tpl from "./template";
 import * as util from "./utils";
-import './web-pet.css'
+import './web-pet.css';
 
 /**
  * webPet配置模型
@@ -8,6 +8,10 @@ import './web-pet.css'
 interface WebPetOptions {
     //  名称
     name?: string
+    //  语言
+    language?: string
+    //  性格
+    character?: string
     //  行为
     action?: {
         //  走
@@ -51,6 +55,8 @@ class WebPet {
 
     private options: WebPetOptions = {
         name: "pet",
+        language: "mandarin",
+        character: "lazy",
         action: {
             move: true,
             sayMyself: true,
@@ -64,8 +70,8 @@ class WebPet {
         },
         serverUrl: {},
         on: {
-            create: function () { },
-            mounted: function () { }
+            create: () => { },
+            mounted: () => { }
         }
     };
 
@@ -94,10 +100,10 @@ class WebPet {
         this.$ = window["jQuery"];
 
         options && (this.options = this.$.extend(true, {}, this.options, options));
-
-        this.init();
-        this.event();
-        this.done();
+        this.eventEmiter("create")
+            .init()
+            .event()
+            .done();
     }
 
     /**
@@ -112,6 +118,8 @@ class WebPet {
         $container.append($pet);
 
         this.$container = $container;
+
+        return this;
     }
 
     /**
@@ -124,11 +132,12 @@ class WebPet {
         const $container = that.$container;
         const $pet = $container.find("div.pet");
 
-        let _move = false;
-        let isMove = false;
-        let _x, _y;
+        let _move: boolean = false;
+        let isMove: boolean = false;
+        let _x: number;
+        let _y: number;
 
-        $(document).mousemove(function (e) {
+        $(document).mousemove((e) => {
             if (_move) {
                 $pet.attr("style", `background-image: url(${statusImg.move})`);
                 var x = e.pageX - _x;
@@ -143,23 +152,23 @@ class WebPet {
                     isMove = true;
                 }
             }
-        }).mouseup(function () {
+        }).mouseup(() => {
             _move = false;
         });
 
         $container
-            .mouseover(function () {
+            .mouseover(() => {
                 $pet.attr("style", `background-image: url(${statusImg.hover})`);
             })
-            .mouseout(function () {
+            .mouseout(() => {
                 $pet.attr("style", `background-image: url(${statusImg.default})`);
             })
-            .mousedown(function (e) {
+            .mousedown((e) => {
                 _move = true;
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
             })
-            .click(function () {
+            .click(() => {
                 if (!isMove) {
                     $pet.attr("style", `background-image: url(${statusImg.move})`);
                     const s = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
@@ -169,21 +178,35 @@ class WebPet {
                         top: document.body.offsetHeight / 2 * (1 + s[i1])
                     }, {
                             duration: 500,
-                            complete: function () { }
+                            complete: () => { }
                         });
                 } else {
                     isMove = false;
                 }
             });
+
+        return this;
     }
 
     /**
      * 结束，挂载
      */
     private done() {
+        const options = this.options;
         this.$(window.document.body).append(this.$container);
-        console.info(`hello, my name is ${this.options.name}`);
-        util.isFn(this.options.on.mounted) && this.options.on.mounted.call(this);
+        console.info(`hello, my name is ${options.name}`);
+        this.eventEmiter("mounted");
+        return this;
+    }
+
+    /**
+     * 事件发布函数
+     * @param event 事件名称
+     */
+    private eventEmiter(event: string) {
+        const on = this.options.on;
+        util.isFn(on[event]) && on[event].call(this);
+        return this;
     }
 
 }

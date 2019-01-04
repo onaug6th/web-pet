@@ -9,9 +9,12 @@
 </body>
 <script>
     const options = {
-        hook: {
+        on: {
+            create: function () {
+                console.info("you will see me in create hook");
+            },
             mounted: function () {
-                console.info("hey hey hey");
+                console.info("you will see me in mounted hook");
             }
         }
     }
