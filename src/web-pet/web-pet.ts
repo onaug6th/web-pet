@@ -1,4 +1,3 @@
-import * as $ from "jquery"
 import * as tpl from "./template";
 import * as util from "./utils";
 import './web-pet.css'
@@ -46,6 +45,8 @@ interface WebPetOptions {
 
 class WebPet {
 
+    private $;
+
     private $container;
 
     private options: WebPetOptions = {
@@ -73,9 +74,26 @@ class WebPet {
      * @param options WebPet配置
      */
     constructor(options?: WebPetOptions) {
+        const that = this;
         if (!window) throw new Error("抱歉，我只能在浏览器中花里胡哨");
 
-        options && (this.options = $.extend(true, {}, this.options, options));
+        if (!window["jQuery"] || !window["$"].fn) {
+            util.getJquery().then(() => {
+                that.create(options);
+            });
+        } else {
+            that.create(options);
+        }
+    }
+
+    /**
+     * 创建webPet
+     * @param options 
+     */
+    private create(options) {
+        this.$ = window["jQuery"];
+
+        options && (this.options = this.$.extend(true, {}, this.options, options));
 
         this.init();
         this.event();
@@ -83,9 +101,10 @@ class WebPet {
     }
 
     /**
-     * 初始化WebPet
+     * 初始化WebPet容器
      */
     private init() {
+        const $ = this.$;
         const $container = $(tpl.container);
         const $pet = $(tpl.pet);
 
@@ -99,6 +118,7 @@ class WebPet {
      * 处理事件
      */
     private event() {
+        const $ = this.$;
         const that = this;
         const statusImg = that.options.statusImg;
         const $container = that.$container;
@@ -161,8 +181,8 @@ class WebPet {
      * 结束，挂载
      */
     private done() {
-        $(window.document.body).append(this.$container);
-        console.info("hello world, i am your web pet");
+        this.$(window.document.body).append(this.$container);
+        console.info(`hello, my name is ${this.options.name}`);
         util.isFn(this.options.on.mounted) && this.options.on.mounted.call(this);
     }
 
