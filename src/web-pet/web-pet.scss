@@ -1,0 +1,16 @@
+div.web-pet{
+    display: block;
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    left: 160px;
+    z-index: 9999;
+
+    div.pet{
+        width: 100px;
+        height: 100px;
+        cursor: move;
+        background-repeat: no-repeat;
+        background-size: 100%;
+    }
+}

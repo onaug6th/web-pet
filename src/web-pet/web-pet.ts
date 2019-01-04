@@ -1,6 +1,6 @@
 import * as tpl from "./template";
 import * as util from "./utils";
-import './web-pet.css';
+import './web-pet.scss';
 
 /**
  * webPet配置模型

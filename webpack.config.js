@@ -120,6 +120,10 @@ module.exports = {
                  * 字体文件交给指定的 loader 打包，类似上面的 html-loader, 用什么 loader 同样在 loaders 对象中定义，等会下面就会看到。
                  */
                 use: ['style-loader', 'css-loader']
+            },
+            {
+                test: /\.scss$/,
+                use: ['style-loader', 'css-loader', 'sass-loader']
             }
         ]
     },
@@ -146,6 +150,6 @@ if (dev) {
         port: 8989,
 
         // add: 用来给服务器的 koa 实例注入 middleware 增加功能
-        add: app => {}
+        add: app => { }
     }
 }
