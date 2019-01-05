@@ -1,10 +1,6 @@
 const path = require('path');
-//  copy资源文件
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 //  html入口
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-//  html中插入资源文件
-const HtmlWebpackIncludeAssetsPlugin = require('html-webpack-include-assets-plugin');
 
 // 使用 WEBPACK_SERVE 环境变量检测当前是否是在 webpack-server 启动的开发环境中
 const dev = Boolean(process.env.WEBPACK_SERVE);
@@ -30,7 +26,7 @@ let plugins = [];
 
     const logger = console.log;
 
-    logger("output输出的path路径为", resolve('dist'));
+    logger("输出的路径为", resolve('dist'));
 
 })();
 
@@ -113,11 +109,10 @@ module.exports = {
             {
                 // 匹配 css 文件
                 test: /\.css$/,
-
                 /*
                  * 先使用 css-loader 处理，返回的结果交给 style-loader 处理。
                  * css-loader 将 css 内容存为 js 字符串，并且会把 background, @font-face 等引用的图片，
-                 * 字体文件交给指定的 loader 打包，类似上面的 html-loader, 用什么 loader 同样在 loaders 对象中定义，等会下面就会看到。
+                 * 字体文件交给指定的 loader 打包，类似上面的 html-loader, 用什么 loader 同样在 loaders 对象中定义。
                  */
                 use: ['style-loader', 'css-loader']
             },
