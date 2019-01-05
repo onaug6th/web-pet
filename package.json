@@ -2,17 +2,19 @@
   "name": "web-pet",
   "version": "1.0.0",
   "description": "a pet for you webpage",
-  "main": "",
+  "repository": "https://github.com/onaug6th/web-pet",
+  "main": "src",
+  "keywords": [
+    "web-pet"
+  ],
   "scripts": {
     "dev": "webpack-serve webpack.config.js",
     "build": "webpack-cli"
   },
-  "author": "",
+  "author": "onaug6th",
   "license": "ISC",
   "devDependencies": {
     "html-webpack-plugin": "3.2.0",
-    "copy-webpack-plugin": "4.5.2",
-    "html-webpack-include-assets-plugin": "1.0.6",
     "babel-core": "6.26.0",
     "babel-eslint": "8.2.3",
     "babel-loader": "7.1.4",
