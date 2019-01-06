@@ -10,12 +10,14 @@ interface WebPetOptions {
     name?: string
     //  语言
     language?: string
-    //  性格
+    /**
+     * 性格
+     */
     character?: string
     //  行为
     action?: {
-        //  走
-        move?: boolean
+        //  随机走动
+        randomMove?: boolean
         //  自言自语
         sayMyself?: boolean
         //  说笑
@@ -53,12 +55,18 @@ class WebPet {
 
     private $container;
 
+    private $pet;
+
+    private $menu;
+
+    private $chat;
+
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
         character: "lazy",
         action: {
-            move: true,
+            randomMove: true,
             sayMyself: true,
             joke: true
         },
@@ -113,12 +121,15 @@ class WebPet {
         const $ = this.$;
         const $container = $(tpl.container);
         const $pet = $(tpl.pet);
-
-        $pet.attr("style", `background-image: url(${this.options.statusImg.default})`);
-        $container.append($pet);
+        const $menu = $(tpl.menu);
+        const $chat = $(tpl.chat);
+        $container.append($pet, $menu, $chat);
 
         this.$container = $container;
-
+        this.$pet = this.$container.find("div.pet");
+        this.$menu = this.$container.find("div.pet-menu");
+        this.$chat = this.$container.find("div.pet-chat");
+        this.changeStatus("default");
         return this;
     }
 
@@ -128,18 +139,21 @@ class WebPet {
     private event() {
         const $ = this.$;
         const that = this;
-        const statusImg = that.options.statusImg;
         const $container = that.$container;
-        const $pet = $container.find("div.pet");
+        const $pet = that.$pet;
 
         let _move: boolean = false;
         let isMove: boolean = false;
         let _x: number;
         let _y: number;
 
+        that.options.action.randomMove && (window.setInterval(function () {
+            that.randomMove();
+        }, 30000));
+
         $(document).mousemove((e) => {
             if (_move) {
-                $pet.attr("style", `background-image: url(${statusImg.move})`);
+                that.changeStatus("move");
                 var x = e.pageX - _x;
                 var y = e.pageY - _y;
                 var wx = $(window).width() - $container.width();
@@ -158,32 +172,37 @@ class WebPet {
 
         $container
             .mouseover(() => {
-                $pet.attr("style", `background-image: url(${statusImg.hover})`);
+                that.toggleChatBox("show");
+                that.changeStatus("move");
             })
-            .mouseout(() => {
-                $pet.attr("style", `background-image: url(${statusImg.default})`);
+            .mouseout((e) => {
+                const $target = e.target;
+                const nodeName = $target.nodeName;
+                const className = $target.className;
+                if(nodeName == "div" && className == "pet-chat"){
+
+                }else{
+                    that.toggleChatBox("hide");
+                }
+                that.changeStatus("default");
             })
             .mousedown((e) => {
+                if (e.which == 3) {
+
+                }
                 _move = true;
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
-            })
-            .click(() => {
-                if (!isMove) {
-                    $pet.attr("style", `background-image: url(${statusImg.move})`);
-                    const s = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
-                    var i1 = Math.floor(Math.random() * s.length);
-                    $container.animate({
-                        left: document.body.offsetWidth / 2 * (1 + s[i1]),
-                        top: document.body.offsetHeight / 2 * (1 + s[i1])
-                    }, {
-                            duration: 500,
-                            complete: () => { }
-                        });
-                } else {
-                    isMove = false;
-                }
             });
+
+        $pet.click(() => {
+            if (!isMove) {
+                that.changeStatus("move");
+                that.randomMove();
+            } else {
+                isMove = false;
+            }
+        });
 
         return this;
     }
@@ -200,12 +219,60 @@ class WebPet {
     }
 
     /**
+     * 改版pet状态
+     * @param status 状态名称
+     */
+    private changeStatus(status: string) {
+        const $pet = this.$pet;
+        $pet.attr("style", `background-image: url(${this.options.statusImg[status]})`);
+        return this;
+    }
+
+    /**
      * 事件发布函数
      * @param event 事件名称
      */
     private eventEmiter(event: string) {
         const on = this.options.on;
         util.isFn(on[event]) && on[event].call(this);
+        return this;
+    }
+
+    private randomMove() {
+        const direction = {};
+        const distant: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
+        const offset: number = Math.floor(Math.random() * distant.length);
+        ["top", "right", "bottom", "left"].forEach(item => {
+            if (parseInt(String(Math.random() * 10)) > 5) {
+                let length: number = document.body.offsetWidth;
+                ["top", "bottom"].indexOf(item) !== -1 && (length = document.documentElement.clientHeight);
+                direction[item] = length / 2 * (1 + distant[offset])
+            }
+        });
+        this.$container.animate(direction, {
+            duration: 500,
+            complete: () => { }
+        });
+        return this;
+    }
+
+    /**
+     * 切换显示消息框
+     * @param type 
+     */
+    private toggleChatBox(type: string = "show") {
+        let method = type == "show" ? "fadeIn" : "fadeOut";
+        this.$chat["stop"]()[method]();
+        return this;
+    }
+
+    /**
+     * 切换显示菜单
+     * @param type 
+     */
+    private toggleMenu(type: string = "show") {
+        let method = type == "show" ? "fadeIn" : "fadeOut";
+        this.$menu["stop"]()[method]();
         return this;
     }
 

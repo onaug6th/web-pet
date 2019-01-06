@@ -2,7 +2,7 @@ div.web-pet{
     display: block;
     width: 100px;
     height: 100px;
-    position: absolute;
+    position: fixed;
     left: 160px;
     z-index: 9999;
 
@@ -12,5 +12,68 @@ div.web-pet{
         cursor: move;
         background-repeat: no-repeat;
         background-size: 100%;
+    }
+
+    & > div.pet-menu{
+        width: 90px;
+        height: 100px;
+        position: absolute;
+        right: -91px;
+        top: 0px;
+        border-radius: 4px;
+        display: none;
+
+        ul{
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+            padding: 10px 0px;
+            padding-left: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            border-radius: 4px;
+
+            li{
+                position: relative;
+                display: block;
+                list-style: none;
+                line-height: 36px;
+                padding: 0 20px;
+                margin: 0;
+                font-size: 14px;
+                color: #606266;
+                cursor: pointer;
+                outline: none;
+
+                &:hover{
+                    color: #2c84cc;
+                }
+            }
+        }
+    }
+
+    & > div.pet-chat{
+        position: absolute;
+        bottom: -60px;
+        left: -35px;
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+        padding: 10px 10px;
+        margin-top: 0;
+        margin-bottom: 0;
+        border-radius: 4px;
+        display: none;
+
+        input{
+            display: block;
+            height: 18px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+
     }
 }
