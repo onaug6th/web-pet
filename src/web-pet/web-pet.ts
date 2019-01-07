@@ -59,12 +59,16 @@ class WebPet {
 
     private $menu;
 
-    private $chat;
+    private $operate;
 
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
         character: "lazy",
+        operate: {
+            //  聊天
+            chat: true
+        },
         action: {
             randomMove: true,
             sayMyself: true,
@@ -122,15 +126,46 @@ class WebPet {
         const $container = $(tpl.container);
         const $pet = $(tpl.pet);
         const $menu = $(tpl.menu);
-        const $chat = $(tpl.chat);
-        $container.append($pet, $menu, $chat);
+        const $operate = this.init_operate();
+        $container.append($pet, $menu, $operate);
 
         this.$container = $container;
         this.$pet = this.$container.find("div.pet");
         this.$menu = this.$container.find("div.pet-menu");
-        this.$chat = this.$container.find("div.pet-chat");
+        this.$operate = this.$container.find("div.pet-operate");
         this.changeStatus("default");
+
         return this;
+    }
+
+    /**
+     * 生成操作区域
+     */
+    private init_operate() {
+        const $ = this.$;
+        const that = this;
+        const $operate = $(tpl.operate);
+        const operateOpt = this.options.operate;
+        for (let i in operateOpt) {
+            const $btn = $(tpl[`${i}Btn`]);
+            const $content = $(tpl[`${i}Content`]);
+
+            $btn.on("click", () => {
+                return that.toggle_operate_content(i);
+            });
+
+            $operate.find("div.pet-operate-list").append($btn);
+            $operate.append($content);
+        }
+        return $operate;
+    }
+
+    /**
+     * 切换操作区域内容
+     * @param type 
+     */
+    private toggle_operate_content(type) {
+        console.info(type);
     }
 
     /**
@@ -154,10 +189,10 @@ class WebPet {
         $(document).mousemove((e) => {
             if (_move) {
                 that.changeStatus("move");
-                var x = e.pageX - _x;
-                var y = e.pageY - _y;
-                var wx = $(window).width() - $container.width();
-                var dy = $(document).height() - $container.height();
+                const x: number = e.pageX - _x;
+                const y: number = e.pageY - _y;
+                const wx: number = $(window).width() - $container.width();
+                const dy: number = $(document).height() - $container.height();
                 if (x >= 0 && x <= wx && y > 0 && y <= dy) {
                     $container.css({
                         top: y,
@@ -172,37 +207,41 @@ class WebPet {
 
         $container
             .mouseover(() => {
-                that.toggleChatBox("show");
+                that.toggleOperateBox("show");
                 that.changeStatus("move");
             })
             .mouseout((e) => {
                 const $target = e.target;
                 const nodeName = $target.nodeName;
                 const className = $target.className;
-                if(nodeName == "div" && className == "pet-chat"){
+                if (nodeName == "div" && className == "pet-operate") {
 
-                }else{
-                    that.toggleChatBox("hide");
+                } else {
+                    that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
+            });
+
+        $pet
+            .click(() => {
+                if (!isMove) {
+                    that.changeStatus("move");
+                    that.randomMove();
+                } else {
+                    isMove = false;
+                }
             })
             .mousedown((e) => {
                 if (e.which == 3) {
-
+                    that.toggleMenu("show");
                 }
                 _move = true;
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
+            })
+            .bind("contextmenu", function (e) {
+                return false;
             });
-
-        $pet.click(() => {
-            if (!isMove) {
-                that.changeStatus("move");
-                that.randomMove();
-            } else {
-                isMove = false;
-            }
-        });
 
         return this;
     }
@@ -219,7 +258,7 @@ class WebPet {
     }
 
     /**
-     * 改版pet状态
+     * 改变pet状态
      * @param status 状态名称
      */
     private changeStatus(status: string) {
@@ -246,7 +285,7 @@ class WebPet {
             if (parseInt(String(Math.random() * 10)) > 5) {
                 let length: number = document.body.offsetWidth;
                 ["top", "bottom"].indexOf(item) !== -1 && (length = document.documentElement.clientHeight);
-                direction[item] = length / 2 * (1 + distant[offset])
+                direction[item] = length / 2 * (1 + distant[offset]);
             }
         });
         this.$container.animate(direction, {
@@ -260,9 +299,9 @@ class WebPet {
      * 切换显示消息框
      * @param type 
      */
-    private toggleChatBox(type: string = "show") {
-        let method = type == "show" ? "fadeIn" : "fadeOut";
-        this.$chat["stop"]()[method]();
+    private toggleOperateBox(type: string = "show") {
+        let method: string = type == "show" ? "fadeIn" : "fadeOut";
+        this.$operate["stop"]()[method]();
         return this;
     }
 
@@ -271,7 +310,7 @@ class WebPet {
      * @param type 
      */
     private toggleMenu(type: string = "show") {
-        let method = type == "show" ? "fadeIn" : "fadeOut";
+        let method: string = type == "show" ? "fadeIn" : "fadeOut";
         this.$menu["stop"]()[method]();
         return this;
     }

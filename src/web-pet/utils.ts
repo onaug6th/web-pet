@@ -2,7 +2,7 @@
  * 是函数吗?
  * @param fn 
  */
-const isFn: Function = function (fn) {
+const isFn: Function = function (fn: Function) {
     return (typeof fn == "function" && fn.constructor == Function);
 }
 
@@ -11,7 +11,7 @@ const isFn: Function = function (fn) {
  */
 const getJquery: Function = function () {
     return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
+        const script: HTMLScriptElement = document.createElement("script");
         script.type = "text/javascript";
         script.src = "https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js";
         script.onload = (res) => { resolve(res) };

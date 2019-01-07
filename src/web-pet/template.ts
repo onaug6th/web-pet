@@ -9,14 +9,27 @@ const menu: string =
         </ul>
     </div>`;
 
-const chat: string =
-`<div class="pet-chat">
-    <input />
-</div>`;
+const operate: string =
+    `<div class="pet-operate">
+        <div class="pet-operate-list">
+        </div>
+    </div>`;
+
+const chatBtn: string =
+    `<a>
+        <img class="emoji" alt="chat" height="20" width="20" src="https://assets-cdn.github.com/images/icons/emoji/speech_balloon.png">
+    </a>`;
+
+const chatContent: string =
+    `<div class="pet-operate-content" data-type="chat">
+        <input />
+    </div>`;
 
 export {
     container,
     pet,
     menu,
-    chat
+    operate,
+    chatBtn,
+    chatContent
 }
