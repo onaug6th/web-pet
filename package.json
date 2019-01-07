@@ -1,11 +1,12 @@
 {
   "name": "web-pet",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a pet for you webpage",
   "repository": "https://github.com/onaug6th/web-pet",
   "main": "dist/index.js",
   "keywords": [
-    "web-pet"
+    "web-pet",
+    "pet"
   ],
   "scripts": {
     "dev": "webpack-serve webpack.config.js",
