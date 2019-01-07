@@ -155,7 +155,7 @@ class WebPet {
             });
 
             $operate.find("div.pet-operate-list").append($btn);
-            $operate.append($content);
+            $operate.find("div.switch-anmiate").append($content);
         }
         return $operate;
     }
@@ -165,7 +165,8 @@ class WebPet {
      * @param type 
      */
     private toggle_operate_content(type) {
-        console.info(type);
+        const $switch = this.$operate.find(".switch-anmiate");
+        $switch.css("top", "-50px");
     }
 
     /**
@@ -296,7 +297,7 @@ class WebPet {
     }
 
     /**
-     * 切换显示消息框
+     * 切换显示功能栏
      * @param type 
      */
     private toggleOperateBox(type: string = "show") {

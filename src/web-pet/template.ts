@@ -11,7 +11,8 @@ const menu: string =
 
 const operate: string =
     `<div class="pet-operate">
-        <div class="pet-operate-list">
+        <div class="switch-anmiate">
+            <div class="pet-operate-list"></div>
         </div>
     </div>`;
 

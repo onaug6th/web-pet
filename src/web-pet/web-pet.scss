@@ -55,34 +55,51 @@ div.web-pet{
         bottom: -60px;
         left: -35px;
         box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-        padding: 10px 10px;
         margin-top: 0;
         margin-bottom: 0;
         border-radius: 4px;
+        max-height: 50px;
+        min-height: 50px;
+        min-width: 170px;
+        max-width: 170px;
+        overflow: hidden;
         // display: none;
 
-        .pet-operate-list{
-            min-width: 150px;
+        & > div{
+            position: relative;
+            top: 0;
 
-            a{
-                cursor: pointer;
+            &.switch-anmiate{
+                transition: top 0.5s;
             }
-        }
 
-        .pet-operate-content{
-            input{
-                display: block;
-                height: 18px;
-                padding: 6px 12px;
-                font-size: 14px;
-                line-height: 1.42857143;
-                color: #555;
-                background-color: #fff;
-                background-image: none;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                outline: none;
+            .pet-operate-list{
+                padding: 13px 10px;
+    
+                a{
+                    cursor: pointer;
+                }
             }
+    
+            .pet-operate-content{
+                padding: 10px 10px;
+    
+                input{
+                    width: 100px;
+                    display: block;
+                    height: 18px;
+                    padding: 5px 12px;
+                    font-size: 14px;
+                    line-height: 1.42857143;
+                    color: #555;
+                    background-color: #fff;
+                    background-image: none;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    outline: none;
+                }
+            }
+
         }
 
     }
