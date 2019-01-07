@@ -13,7 +13,7 @@ $ npm install web-pet
 ## Usage
 
 ```js
-const WebPet = require("WebPet");
+const WebPet = require("web-pet");
 
 //  you can play with
 const myPet = new WebPet();
