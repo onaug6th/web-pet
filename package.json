@@ -13,7 +13,7 @@
     "build": "webpack-cli"
   },
   "author": "onaug6th",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "html-webpack-plugin": "3.2.0",
     "babel-core": "6.26.0",
