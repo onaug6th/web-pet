@@ -6,15 +6,62 @@ a pet for your webpage.
 
 ## Install
 
-```
-$ npm install web-pet
+Using npm:
+
+```bash
+npm install web-pet
 ```
 
-## Usage
+Using script:
+
+```html
+<script src="/dist/index.min.js"></script>
+```
+## Example
 
 ```js
-const WebPet = require("web-pet");
+import WebPet from "web-pet";
 
-//  you can play with
-const myPet = new WebPet();
+const firstPet = new WebPet();
+
+const opt = {
+    ...
+}
+
+const otherPet = new WebPet(opt);
 ```
+
+## WebPet Config
+
+You can customize your pet, his appearance and some behavior.
+```js
+{
+  name: 'pet',
+  language: 'mandarin',
+  character: 'lazy',
+  action: {
+    randomMove: true,
+    sayMyself: true,
+    joke: true,
+  },
+  statusImg: {
+    
+  },
+  serverUrl: {
+    learn: "",
+    answer: ""
+  },
+  on: {
+    create: function(){
+
+    },
+    mounted: function(){
+
+    }
+  }
+}
+```
+
+## License
+
+MIT
