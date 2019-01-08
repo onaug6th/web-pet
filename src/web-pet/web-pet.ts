@@ -114,7 +114,7 @@ class WebPet {
         options && (this.options = this.$.extend(true, {}, this.options, options));
         this.eventEmiter("create")
             .init()
-            .event()
+            .actionEvent()
             .done();
     }
 
@@ -126,7 +126,7 @@ class WebPet {
         const $container = $(tpl.container);
         const $pet = $(tpl.pet);
         const $menu = $(tpl.menu);
-        const $operate = this.init_operate();
+        const $operate = this.initOperate();
 
         $container.append($pet, $menu, $operate);
 
@@ -142,7 +142,7 @@ class WebPet {
     /**
      * 生成操作区域
      */
-    private init_operate() {
+    private initOperate() {
         const $ = this.$;
         const that = this;
         const $operate = $(tpl.operate);
@@ -152,12 +152,14 @@ class WebPet {
             const $content = $(tpl[`${i}Content`]);
             const $return_btn = $(tpl.returnBtn);
 
+            that.handleContentEvent($content, i);
+
             $btn.on("click", () => {
-                return that.toggle_operate_content(i);
+                return that.toggleOperateContent(i);
             });
 
             $return_btn.on("click", () => {
-                return that.toggle_operate_content();
+                return that.toggleOperateContent();
             });
 
             $operate.find("div.pet-operate-list").append($btn);
@@ -169,24 +171,39 @@ class WebPet {
     }
 
     /**
+     * 
+     * @param $content 
+     * @param type 
+     */
+    private handleContentEvent($content, type: string) {
+        if (type == "chat") {
+            $content.on("keydown", (e: KeyboardEvent) => {
+                if (e.keyCode == 13) {
+
+                }
+            });
+        }
+    }
+
+    /**
      * 切换操作区域内容
      * @param type 切换的类型
      */
-    private toggle_operate_content(type?) {
+    private toggleOperateContent(type?: string) {
         const $switch = this.$operate.find(".switch-anmiate");
         const $target = $switch.find(`[data-type=${type}]`);
         const distant = -50 * $target.siblings().length;
         if (type) {
             $switch.css("top", `${distant}px`);
-        }else{
+        } else {
             $switch.css("top", `0px`);
         }
     }
 
     /**
-     * 处理事件
+     * 处理动作
      */
-    private event() {
+    private actionEvent() {
         const $ = this.$;
         const that = this;
         const $container = that.$container;
@@ -197,11 +214,11 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        that.options.action.randomMove && (window.setInterval(function () {
-            that.randomMove();
-        }, 30000));
+        // that.options.action.randomMove && (window.setInterval(function () {
+        //     that.randomMove();
+        // }, 30000));
 
-        $(document).mousemove((e) => {
+        $(document).mousemove((e: MouseEvent) => {
             if (_move) {
                 that.changeStatus("move");
                 const x: number = e.pageX - _x;
@@ -246,7 +263,7 @@ class WebPet {
                     isMove = false;
                 }
             })
-            .mousedown((e) => {
+            .mousedown((e: MouseEvent) => {
                 if (e.which == 3) {
                     that.toggleMenu("show");
                 }
