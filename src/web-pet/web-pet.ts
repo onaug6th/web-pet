@@ -214,9 +214,9 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        // that.options.action.randomMove && (window.setInterval(function () {
-        //     that.randomMove();
-        // }, 30000));
+        that.options.action.randomMove && (window.setInterval(function () {
+            that.randomMove();
+        }, 30000));
 
         $(document).mousemove((e: MouseEvent) => {
             if (_move) {
