@@ -127,6 +127,7 @@ class WebPet {
         const $pet = $(tpl.pet);
         const $menu = $(tpl.menu);
         const $operate = this.init_operate();
+
         $container.append($pet, $menu, $operate);
 
         this.$container = $container;
@@ -149,24 +150,37 @@ class WebPet {
         for (let i in operateOpt) {
             const $btn = $(tpl[`${i}Btn`]);
             const $content = $(tpl[`${i}Content`]);
+            const $return_btn = $(tpl.returnBtn);
 
             $btn.on("click", () => {
                 return that.toggle_operate_content(i);
             });
 
+            $return_btn.on("click", () => {
+                return that.toggle_operate_content();
+            });
+
             $operate.find("div.pet-operate-list").append($btn);
-            $operate.find("div.switch-anmiate").append($content);
+            $operate.find("div.switch-anmiate").append(
+                $content.append($return_btn)
+            );
         }
         return $operate;
     }
 
     /**
      * 切换操作区域内容
-     * @param type 
+     * @param type 切换的类型
      */
-    private toggle_operate_content(type) {
+    private toggle_operate_content(type?) {
         const $switch = this.$operate.find(".switch-anmiate");
-        $switch.css("top", "-50px");
+        const $target = $switch.find(`[data-type=${type}]`);
+        const distant = -50 * $target.siblings().length;
+        if (type) {
+            $switch.css("top", `${distant}px`);
+        }else{
+            $switch.css("top", `0px`);
+        }
     }
 
     /**

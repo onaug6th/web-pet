@@ -82,13 +82,28 @@ div.web-pet{
             }
     
             .pet-operate-content{
-                padding: 10px 10px;
+                position: relative;
+                padding: 10px 5px;
+
+                .return-btn{
+                    float: left;
+                    margin: 3px 5px 5px 5px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    background-color: #fff;
+                    cursor: pointer;
+                    position: absolute;
+                    right: 0px;
+                    top: 7px;
+                    padding: 6px 6px 5px 6px;
+                    z-index: 1;
+                }
     
                 input{
-                    width: 100px;
+                    width: 94px;
                     display: block;
                     height: 18px;
-                    padding: 5px 12px;
+                    padding: 5px 10px;
                     font-size: 14px;
                     line-height: 1.42857143;
                     color: #555;

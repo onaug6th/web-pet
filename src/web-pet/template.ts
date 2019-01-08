@@ -16,6 +16,9 @@ const operate: string =
         </div>
     </div>`;
 
+const returnBtn: string = 
+    `<button class="return-btn">取消</button>`;
+
 const chatBtn: string =
     `<a>
         <img class="emoji" alt="chat" height="20" width="20" src="https://assets-cdn.github.com/images/icons/emoji/speech_balloon.png">
@@ -31,6 +34,7 @@ export {
     pet,
     menu,
     operate,
+    returnBtn,
     chatBtn,
     chatContent
 }
