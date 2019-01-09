@@ -138,10 +138,11 @@ div.web-pet{
         width: 1em;
         height: 3em;
         color: rgb(53, 152, 220);
+        display: none;
 
         .pet-paw {
-            width: .5em;
-            height: .7em;
+            width: .4em;
+            height: .6em;
             animation: 2050ms pawAnimation ease-in-out infinite;
             opacity: 0;
 

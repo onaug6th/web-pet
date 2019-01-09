@@ -130,7 +130,7 @@ class WebPet {
         const $menu = $(tpl.menu);
         const $operate = this.initOperate();
         const $pawList = $(tpl.pawList);
-        $pawList.append($(tpl.paw), $(tpl.paw));
+        $pawList.prepend($(tpl.paw), $(tpl.paw));
 
         $container.append($pet, $menu, $operate, $pawList);
 
@@ -253,7 +253,7 @@ class WebPet {
                 if (nodeName == "div" && className == "pet-operate") {
 
                 } else {
-                    // that.toggleOperateBox("hide");
+                    that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
             });
