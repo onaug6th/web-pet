@@ -1,4 +1,9 @@
 div.web-pet{
+    
+    *{
+        box-sizing: border-box;
+    }
+    
     display: block;
     width: 100px;
     height: 100px;
@@ -88,22 +93,24 @@ div.web-pet{
 
                 .return-btn{
                     float: left;
-                    margin: 3px 5px 5px 5px;
+                    width: 19%;
+                    margin-left: 2px;
+                    padding: 0px;
+                    font-size: 12px;
+                    text-align: center;
+                    height: 30px;
+                    white-space: nowrap;
                     border: 1px solid #ccc;
                     border-radius: 4px;
                     background-color: #fff;
                     cursor: pointer;
-                    position: absolute;
-                    right: 0px;
-                    top: 7px;
-                    padding: 6px 6px 5px 6px;
-                    z-index: 1;
                 }
     
                 input{
-                    width: 94px;
+                    float: left;
+                    width: 79%;
                     display: block;
-                    height: 18px;
+                    height: 30px;
                     padding: 5px 10px;
                     font-size: 14px;
                     line-height: 1.42857143;
@@ -119,4 +126,78 @@ div.web-pet{
         }
 
     }
+
+    
+    .pet-paw-list {
+        position: absolute;
+        top: 25%;
+        left: 50%;
+        transform-origin: 50% 50%;
+        transform: rotate(360deg) translate(-50%, 0%);
+        font-size: 50px;
+        width: 1em;
+        height: 3em;
+        color: rgb(53, 152, 220);
+
+        .pet-paw {
+            width: .5em;
+            height: .7em;
+            animation: 2050ms pawAnimation ease-in-out infinite;
+            opacity: 0;
+
+            svg {
+                width: 100%;
+                height: 100%;
+            }
+
+            .icon {
+                fill: currentColor;
+            }
+        }
+
+        .pet-paw:nth-child(odd) {
+            transform: rotate(-10deg);
+        }
+
+        .pet-paw:nth-child(even) {
+            transform: rotate(10deg) translate(125%, 0);
+        }
+
+        .pet-paw:nth-child(1) {
+            animation-delay: 1.25s;
+        }
+
+        .pet-paw:nth-child(2) {
+            animation-delay: 1s;
+        }
+
+        .pet-paw:nth-child(3) {
+            animation-delay: 0.75s;
+        }
+
+        .pet-paw:nth-child(4) {
+            animation-delay: 0.5s;
+        }
+
+        .pet-paw:nth-child(5) {
+            animation-delay: 0.25s;
+        }
+
+        .pet-paw:nth-child(6) {
+            animation-delay: 0s;
+        }
+    }
+
+    @keyframes pawAnimation {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 0;
+        }
+    }
+
 }

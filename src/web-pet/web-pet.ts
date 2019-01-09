@@ -61,6 +61,8 @@ class WebPet {
 
     private $operate;
 
+    private $paw;
+
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
@@ -127,8 +129,10 @@ class WebPet {
         const $pet = $(tpl.pet);
         const $menu = $(tpl.menu);
         const $operate = this.initOperate();
+        const $pawList = $(tpl.pawList);
+        $pawList.append($(tpl.paw), $(tpl.paw));
 
-        $container.append($pet, $menu, $operate);
+        $container.append($pet, $menu, $operate, $pawList);
 
         this.$container = $container;
         this.$pet = this.$container.find("div.pet");
@@ -214,9 +218,9 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        that.options.action.randomMove && (window.setInterval(function () {
-            that.randomMove();
-        }, 30000));
+        // that.options.action.randomMove && (window.setInterval(function () {
+        //     that.randomMove();
+        // }, 30000));
 
         $(document).mousemove((e: MouseEvent) => {
             if (_move) {
@@ -249,7 +253,7 @@ class WebPet {
                 if (nodeName == "div" && className == "pet-operate") {
 
                 } else {
-                    that.toggleOperateBox("hide");
+                    // that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
             });
