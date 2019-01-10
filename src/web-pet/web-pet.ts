@@ -61,8 +61,6 @@ class WebPet {
 
     private $operate;
 
-    private $paw;
-
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
@@ -313,16 +311,21 @@ class WebPet {
         return this;
     }
 
+    /**
+     * 随机移动
+     * @param mustMove 必须移动
+     */
     private randomMove() {
         const direction = {};
         const distant: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
         const offset: number = Math.floor(Math.random() * distant.length);
-        ["top", "right", "bottom", "left"].forEach(item => {
-            if (parseInt(String(Math.random() * 10)) > 5) {
-                let length: number = document.body.offsetWidth;
-                ["top", "bottom"].indexOf(item) !== -1 && (length = document.documentElement.clientHeight);
-                direction[item] = length / 2 * (1 + distant[offset]);
-            }
+        [["top", "left"], ["bottom", "right"], ["bottom", "left"], ["top", "right"]][parseInt(String(Math.random() * 4))].forEach((item, index) => {
+
+            const length: number = item == "top" ? document.documentElement.clientHeight : document.body.offsetWidth;
+            const value: number = length / 2 * (1 + distant[offset]);
+
+            direction[item] = value;
+
         });
         this.$container.animate(direction, {
             duration: 500,
