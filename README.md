@@ -32,8 +32,7 @@ const otherPet = new WebPet(opt);
 ```
 
 ## WebPet Config
-
-You can customize your pet, his appearance and some behavior.
+You can customize your pet, his appearance and some behavior. is comming soon!
 ```js
 {
   name: 'pet',

@@ -216,9 +216,9 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        // that.options.action.randomMove && (window.setInterval(function () {
-        //     that.randomMove();
-        // }, 30000));
+        that.options.action.randomMove && (window.setInterval(function () {
+            that.randomMove();
+        }, 20000));
 
         $(document).mousemove((e: MouseEvent) => {
             if (_move) {
@@ -313,13 +313,13 @@ class WebPet {
 
     /**
      * 随机移动
-     * @param mustMove 必须移动
      */
     private randomMove() {
         const direction = {};
         const distant: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
         const offset: number = Math.floor(Math.random() * distant.length);
-        [["top", "left"], ["bottom", "right"], ["bottom", "left"], ["top", "right"]][parseInt(String(Math.random() * 4))].forEach((item, index) => {
+        
+        [["top", "bottom"][~~(Math.random() * 2)], ["left", "right"][~~(Math.random() * 2)]].forEach((item) => {
 
             const length: number = item == "top" ? document.documentElement.clientHeight : document.body.offsetWidth;
             const value: number = length / 2 * (1 + distant[offset]);
