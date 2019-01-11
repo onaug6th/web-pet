@@ -130,15 +130,17 @@ div.web-pet{
     
     .pet-paw-list {
         position: absolute;
-        top: 25%;
+        top: 75%;
         left: 50%;
-        transform-origin: 50% 50%;
+        transform-origin: 0px 0px;
         transform: rotate(360deg) translate(-50%, 0%);
         font-size: 50px;
-        width: 1em;
-        height: 3em;
         color: rgb(53, 152, 220);
-        display: none;
+        // display: none;
+
+        & > svg{
+            display: none;
+        }
 
         .pet-paw {
             width: .4em;

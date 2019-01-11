@@ -69,6 +69,10 @@ class WebPet {
             //  聊天
             chat: true
         },
+        position: {
+            x: 0,
+            y: 0
+        },
         action: {
             randomMove: true,
             sayMyself: true,
@@ -108,7 +112,7 @@ class WebPet {
      * 创建webPet
      * @param options 
      */
-    private create(options) {
+    private create(options: WebPetOptions) {
         this.$ = window["jQuery"];
 
         options && (this.options = this.$.extend(true, {}, this.options, options));
@@ -173,9 +177,9 @@ class WebPet {
     }
 
     /**
-     * 
+     * 处理操作区域事件
      * @param $content 
-     * @param type 
+     * @param type 切换的类型
      */
     private handleContentEvent($content, type: string) {
         if (type == "chat") {
@@ -216,9 +220,9 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        that.options.action.randomMove && (window.setInterval(function () {
-            that.randomMove();
-        }, 20000));
+        // that.options.action.randomMove && (window.setInterval(function () {
+        //     that.randomMove();
+        // }, 20000));
 
         $(document).mousemove((e: MouseEvent) => {
             if (_move) {
@@ -251,7 +255,7 @@ class WebPet {
                 if (nodeName == "div" && className == "pet-operate") {
 
                 } else {
-                    that.toggleOperateBox("hide");
+                    // that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
             });
@@ -287,6 +291,7 @@ class WebPet {
         const options = this.options;
         this.$(window.document.body).append(this.$container);
         console.info(`hello, my name is ${options.name}`);
+        this.updatePosition();
         this.eventEmiter("mounted");
         return this;
     }
@@ -315,23 +320,40 @@ class WebPet {
      * 随机移动
      */
     private randomMove() {
-        const direction = {};
-        const distant: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
-        const offset: number = Math.floor(Math.random() * distant.length);
+        const that = this;
+        const anmiateOpt = {
+            top: 0,
+            left: 0
+        };
+        const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
+        const position = that.options.position;
+
+        ["top", "left"].forEach((item) => {
+            const length: number = "top" == item ? document.documentElement.clientHeight : document.body.offsetWidth;
+            const distant: number = Math.floor(Math.random() * offset.length);
+            const value: number = length / 2 * (1 + offset[distant]);
+            anmiateOpt[item] = value;
+        });
+
+        var w = anmiateOpt.left - position.left;
+        var h = anmiateOpt.top - position.top;
+        var o = Math.sqrt((w * w) + (h * h));
         
-        [["top", "bottom"][~~(Math.random() * 2)], ["left", "right"][~~(Math.random() * 2)]].forEach((item) => {
-
-            const length: number = item == "top" ? document.documentElement.clientHeight : document.body.offsetWidth;
-            const value: number = length / 2 * (1 + distant[offset]);
-
-            direction[item] = value;
-
-        });
-        this.$container.animate(direction, {
+        that.$container.stop().animate(anmiateOpt, {
             duration: 500,
-            complete: () => { }
+            complete: () => {
+                that.updatePosition({ top: anmiateOpt.top, left: anmiateOpt.left });
+            }
         });
-        return this;
+        return that;
+    }
+
+    /**
+     * 更新pet的x, y轴坐标
+     * @param top 
+     */
+    private updatePosition(newPosition?: { top: number, left: number }) {
+        this.options.position = newPosition || this.$pet.offset();
     }
 
     /**
