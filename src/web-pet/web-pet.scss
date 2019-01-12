@@ -127,80 +127,79 @@ div.web-pet{
 
     }
 
-    
-    .pet-paw-list {
-        position: absolute;
-        top: 75%;
-        left: 50%;
-        transform-origin: 0px 0px;
-        transform: rotate(360deg) translate(-50%, 0%);
-        font-size: 50px;
-        color: rgb(53, 152, 220);
-        // display: none;
+}
 
-        & > svg{
-            display: none;
+.pet-paw-list {
+    position: absolute;
+    left: 160px;
+    top: 0px;
+    transform-origin: 100% 100%;
+    transform: rotate(360deg) translate(-50%, 0%);
+    font-size: 50px;
+    color: rgb(53, 152, 220);
+    // display: none;
+
+    & > svg{
+        display: none;
+    }
+
+    .pet-paw {
+        width: .4em;
+        height: .6em;
+        animation: 2050ms pawAnimation ease-in-out infinite;
+        opacity: 0;
+
+        svg {
+            width: 100%;
+            height: 100%;
         }
 
-        .pet-paw {
-            width: .4em;
-            height: .6em;
-            animation: 2050ms pawAnimation ease-in-out infinite;
-            opacity: 0;
-
-            svg {
-                width: 100%;
-                height: 100%;
-            }
-
-            .icon {
-                fill: currentColor;
-            }
-        }
-
-        .pet-paw:nth-child(odd) {
-            transform: rotate(-10deg);
-        }
-
-        .pet-paw:nth-child(even) {
-            transform: rotate(10deg) translate(125%, 0);
-        }
-
-        .pet-paw:nth-child(1) {
-            animation-delay: 1.25s;
-        }
-
-        .pet-paw:nth-child(2) {
-            animation-delay: 1s;
-        }
-
-        .pet-paw:nth-child(3) {
-            animation-delay: 0.75s;
-        }
-
-        .pet-paw:nth-child(4) {
-            animation-delay: 0.5s;
-        }
-
-        .pet-paw:nth-child(5) {
-            animation-delay: 0.25s;
-        }
-
-        .pet-paw:nth-child(6) {
-            animation-delay: 0s;
+        .icon {
+            fill: currentColor;
         }
     }
 
-    @keyframes pawAnimation {
-        0% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0;
-        }
-        100% {
-            opacity: 0;
-        }
+    .pet-paw:nth-child(odd) {
+        transform: rotate(-10deg);
     }
 
+    .pet-paw:nth-child(even) {
+        transform: rotate(10deg) translate(125%, 0);
+    }
+
+    .pet-paw:nth-child(1) {
+        animation-delay: 1.25s;
+    }
+
+    .pet-paw:nth-child(2) {
+        animation-delay: 1s;
+    }
+
+    .pet-paw:nth-child(3) {
+        animation-delay: 0.75s;
+    }
+
+    .pet-paw:nth-child(4) {
+        animation-delay: 0.5s;
+    }
+
+    .pet-paw:nth-child(5) {
+        animation-delay: 0.25s;
+    }
+
+    .pet-paw:nth-child(6) {
+        animation-delay: 0s;
+    }
+}
+
+@keyframes pawAnimation {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
 }

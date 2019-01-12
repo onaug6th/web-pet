@@ -14,6 +14,8 @@ interface WebPetOptions {
      * 性格
      */
     character?: string
+    //  脚印
+    footPrint?: boolean
     //  行为
     action?: {
         //  随机走动
@@ -65,8 +67,8 @@ class WebPet {
         name: "pet",
         language: "mandarin",
         character: "lazy",
+        footPrint: true,
         operate: {
-            //  聊天
             chat: true
         },
         position: {
@@ -232,10 +234,12 @@ class WebPet {
                 const wx: number = $(window).width() - $container.width();
                 const dy: number = $(document).height() - $container.height();
                 if (x >= 0 && x <= wx && y > 0 && y <= dy) {
-                    $container.css({
+                    const position = {
                         top: y,
                         left: x
-                    });
+                    };
+                    $container.css(position);
+                    that.updatePosition(position)
                     isMove = true;
                 }
             }
@@ -255,7 +259,7 @@ class WebPet {
                 if (nodeName == "div" && className == "pet-operate") {
 
                 } else {
-                    // that.toggleOperateBox("hide");
+                    that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
             });
@@ -335,10 +339,8 @@ class WebPet {
             anmiateOpt[item] = value;
         });
 
-        var w = anmiateOpt.left - position.left;
-        var h = anmiateOpt.top - position.top;
-        var o = Math.sqrt((w * w) + (h * h));
-        
+        that.options.footPrint && (that.initFootPrint(position, anmiateOpt));
+
         that.$container.stop().animate(anmiateOpt, {
             duration: 500,
             complete: () => {
@@ -346,6 +348,19 @@ class WebPet {
             }
         });
         return that;
+    }
+
+    /**
+     * 生成脚印
+     * @param orgin 
+     * @param target 
+     */
+    private initFootPrint(orgin, target) {
+
+        const x = Math.abs(target.left - orgin.left);
+        const y = Math.abs(target.top - orgin.top);
+        const z = Math.sqrt(x * x + y * y);
+        const angle = Math.round((Math.asin(y / z) / Math.PI * 180));
     }
 
     /**
