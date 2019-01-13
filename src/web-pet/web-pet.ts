@@ -133,10 +133,8 @@ class WebPet {
         const $pet = $(tpl.pet);
         const $menu = $(tpl.menu);
         const $operate = this.initOperate();
-        const $pawList = $(tpl.pawList);
-        $pawList.prepend($(tpl.paw), $(tpl.paw));
 
-        $container.append($pet, $menu, $operate, $pawList);
+        $container.append($pet, $menu, $operate);
 
         this.$container = $container;
         this.$pet = this.$container.find("div.pet");
@@ -356,11 +354,113 @@ class WebPet {
      * @param target 
      */
     private initFootPrint(orgin, target) {
-
+        const $ = this.$;
         const x = Math.abs(target.left - orgin.left);
         const y = Math.abs(target.top - orgin.top);
         const z = Math.sqrt(x * x + y * y);
         const angle = Math.round((Math.asin(y / z) / Math.PI * 180));
+
+        const $pawWrap = $(tpl.pawList);
+        $pawWrap.css(orgin);
+
+        const quadrant = this.countQuadrant(orgin, target);
+        const $pawList = $pawWrap.find(".pet-paw-list");
+
+        $pawList.css({
+            "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
+            "height": z
+        });
+
+        for (let i = 0; i < Math.ceil(z / 30); i++) {
+            $pawList.prepend($(tpl.paw));
+        }
+        this.$(window.document.body).append($pawWrap);
+    }
+
+    /**
+     * 根据计算旋转的角度
+     * @param quadrant 
+     * @param angle 
+     */
+    private angleByQuadrant(quadrant, angle){
+        if(quadrant == 1){
+            return 270 + angle;
+        }
+        if(quadrant == 2){
+            return 90 + angle;
+        }
+        if(quadrant == 3){
+            return 270 - angle;
+        }
+        if(quadrant == 4){
+            return 90 - angle;
+        }
+    }
+
+    /**
+     * 计算位置象限
+     * @param orgin 
+     * @param target 
+     */
+    private countQuadrant(orgin, target){
+        const x = orgin.left;
+        const y = orgin.top;
+        const tx = target.left;
+        const ty = target.top;
+
+        if(tx < x){
+            if(ty > y){
+                return 3;
+            }
+            if(ty < y){
+                return 1;
+            }
+        }
+        if(tx > x){
+            if(ty > y){
+                return 2;
+            }
+            if(ty < y){
+                return 4;
+            }
+        }
+
+        if(ty == y){
+            if(ty > 0){
+                if(tx > x){
+                    return 2;
+                }
+                if(tx < x){
+                    return 1;
+                }
+            }
+            if(ty < 0){
+                if(tx > x){
+                    return 4;
+                }
+                if(tx < x){
+                    return 3;
+                }
+            }
+        }
+        if(tx == x){
+            if(tx > 0){
+                if(ty > y){
+                    return 2;
+                }
+                if(ty < y){
+                    return 4;
+                }
+            }
+            if(tx < 0){
+                if(ty > y){
+                    return 1;
+                }
+                if(ty < y){
+                    return 3;
+                }
+            }
+        }
     }
 
     /**
