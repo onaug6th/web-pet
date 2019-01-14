@@ -382,17 +382,17 @@ class WebPet {
      * @param quadrant 
      * @param angle 
      */
-    private angleByQuadrant(quadrant, angle){
-        if(quadrant == 1){
-            return 270 + angle;
-        }
-        if(quadrant == 2){
+    private angleByQuadrant(quadrant: number, angle: number) {
+        if (quadrant == 1) {
             return 90 + angle;
         }
-        if(quadrant == 3){
+        if (quadrant == 2) {
+            return 270 + angle;
+        }
+        if (quadrant == 3) {
             return 270 - angle;
         }
-        if(quadrant == 4){
+        if (quadrant == 4) {
             return 90 - angle;
         }
     }
@@ -402,65 +402,83 @@ class WebPet {
      * @param orgin 
      * @param target 
      */
-    private countQuadrant(orgin, target){
+    private countQuadrant(orgin, target) {
         const x = orgin.left;
         const y = orgin.top;
         const tx = target.left;
         const ty = target.top;
 
-        if(tx < x){
-            if(ty > y){
-                return 3;
-            }
-            if(ty < y){
+        //  1, 4
+        if (tx > x) {
+            //  1
+            if (ty > y) {
                 return 1;
             }
-        }
-        if(tx > x){
-            if(ty > y){
-                return 2;
-            }
-            if(ty < y){
+            //  4
+            if (ty < y) {
                 return 4;
             }
         }
-
-        if(ty == y){
-            if(ty > 0){
-                if(tx > x){
-                    return 2;
-                }
-                if(tx < x){
+        //  2, 3
+        if (tx < x) {
+            //  2
+            if (ty < y) {
+                return 2;
+            }
+            //  3
+            if (ty > y) {
+                return 3;
+            }
+        }
+        if (ty == y) {
+            //  1, 2
+            if (ty > 0) {
+                //  1
+                if (tx > x) {
                     return 1;
                 }
+                //  2
+                if (tx < x) {
+                    return 2;
+                }
             }
-            if(ty < 0){
-                if(tx > x){
+            //  3, 4
+            if (ty < 0) {
+                //  4
+                if (tx > x) {
                     return 4;
                 }
-                if(tx < x){
+                //  3
+                if (tx < x) {
                     return 3;
                 }
             }
         }
-        if(tx == x){
-            if(tx > 0){
-                if(ty > y){
-                    return 2;
+        if (tx == x) {
+            //  1, 4
+            if (tx > 0) {
+                //  1
+                if (ty > y) {
+                    return 1;
                 }
-                if(ty < y){
+                //  4
+                if (ty < y) {
                     return 4;
                 }
             }
-            if(tx < 0){
-                if(ty > y){
-                    return 1;
+            //  2, 3
+            if (tx < 0) {
+                //  2
+                if (ty > y) {
+                    return 2;
                 }
-                if(ty < y){
+                //  3
+                if (ty < y) {
                     return 3;
                 }
             }
         }
+        return 4;
     }
 
     /**
