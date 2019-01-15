@@ -9,7 +9,7 @@
     "pet"
   ],
   "scripts": {
-    "dev": "webpack-serve webpack.config.js",
+    "dev": "webpack-serve webpack.config.js --open",
     "build": "webpack-cli"
   },
   "author": "onaug6th",
