@@ -292,9 +292,9 @@ class WebPet {
     private done() {
         const options = this.options;
         this.$(window.document.body).append(this.$container);
-        console.info(`hello, my name is ${options.name}`);
         this.updatePosition();
         this.eventEmiter("mounted");
+        console.info(`hello, my name is ${options.name}`);
         return this;
     }
 
@@ -323,26 +323,26 @@ class WebPet {
      */
     private randomMove() {
         const that = this;
-        const anmiateOpt = {
+        const orgin = that.options.position;
+        const target = {
             top: 0,
             left: 0
         };
         const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
-        const position = that.options.position;
 
-        ["top", "left"].forEach((item) => {
-            const length: number = "top" == item ? document.documentElement.clientHeight : document.body.offsetWidth;
+        ["top", "left"].forEach((direction) => {
+            const length: number = "top" == direction ? document.documentElement.clientHeight : document.body.offsetWidth;
             const distant: number = Math.floor(Math.random() * offset.length);
             const value: number = length / 2 * (1 + offset[distant]);
-            anmiateOpt[item] = value;
+            target[direction] = value;
         });
 
-        that.options.footPrint && (that.initFootPrint(position, anmiateOpt));
+        that.options.footPrint && (that.initFootPrint(orgin, target));
 
-        that.$container.stop().animate(anmiateOpt, {
-            duration: 500,
+        that.$container.stop().animate(target, {
+            duration: 5000,
             complete: () => {
-                that.updatePosition({ top: anmiateOpt.top, left: anmiateOpt.left });
+                that.updatePosition({ top: target.top, left: target.left });
             }
         });
         return that;
@@ -355,32 +355,44 @@ class WebPet {
      */
     private initFootPrint(orgin, target) {
         const $ = this.$;
-        const x = Math.abs(target.left - orgin.left);
-        const y = Math.abs(target.top - orgin.top);
-        const z = Math.sqrt(x * x + y * y);
-        const angle = Math.round((Math.asin(y / z) / Math.PI * 180));
+        //  x轴坐标
+        const x: number = Math.abs(target.left - orgin.left);
+        //  y轴坐标
+        const y: number = Math.abs(target.top - orgin.top);
+        //  z轴长度
+        const z: number = Math.sqrt(x * x + y * y);
+        //  对角线角度
+        const angle: number = Math.round((Math.asin(y / z) / Math.PI * 180));
 
+        //  脚印外壳
         const $pawWrap = $(tpl.pawList);
+        //  设置基础位置
         $pawWrap.css(orgin);
-
-        const quadrant = this.countQuadrant(orgin, target);
+        //  目标位置象限
+        const quadrant: number = this.countQuadrant(orgin, target);
+        //  脚印列表
         const $pawList = $pawWrap.find(".pet-paw-list");
-
+        //  设置旋转角度及高度
         $pawList.css({
             "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
             "height": z
         });
-
-        for (let i = 0; i < Math.ceil(z / 30); i++) {
-            $pawList.prepend($(tpl.paw));
+        //  总脚印数
+        const paws: number = Math.ceil(z / 30);
+        //  设置脚印消失时间与追加脚印
+        for (let i = 0; i < paws; i++) {
+            const $paw = $(tpl.paw);
+            $paw.css("animation-delay", `${1 + paws / (2 * i)}s`);
+            $pawList.append($paw);
         }
-        this.$(window.document.body).append($pawWrap);
+        //  挂载脚印模板
+        $(window.document.body).prepend($pawWrap);
     }
 
     /**
      * 根据计算旋转的角度
-     * @param quadrant 
-     * @param angle 
+     * @param quadrant 象限
+     * @param angle 角度
      */
     private angleByQuadrant(quadrant: number, angle: number) {
         if (quadrant == 1) {
@@ -398,15 +410,15 @@ class WebPet {
     }
 
     /**
-     * 计算位置象限
+     * 计算位置象限，待优化
      * @param orgin 
      * @param target 
      */
     private countQuadrant(orgin, target) {
-        const x = orgin.left;
-        const y = orgin.top;
-        const tx = target.left;
-        const ty = target.top;
+        const x: number = orgin.left;
+        const y: number = orgin.top;
+        const tx: number = target.left;
+        const ty: number = target.top;
 
         //  1, 4
         if (tx > x) {

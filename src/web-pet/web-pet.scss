@@ -154,7 +154,7 @@ div.web-pet{
         .pet-paw {
             width: 20px;
             height: 30px;
-            animation: 2050ms pawAnimation ease-in-out 1;
+            animation: 3050ms pawAnimation ease-in 1;
             opacity: 0;
     
             svg {
@@ -176,27 +176,27 @@ div.web-pet{
         }
     
         .pet-paw:nth-child(1) {
-            animation-delay: 1.25s;
+            animation-delay: 3.5s;
         }
     
         .pet-paw:nth-child(2) {
-            animation-delay: 1s;
+            animation-delay: 3s;
         }
     
         .pet-paw:nth-child(3) {
-            animation-delay: 0.75s;
+            animation-delay: 2.5s;
         }
     
         .pet-paw:nth-child(4) {
-            animation-delay: 0.5s;
+            animation-delay: 2s;
         }
     
         .pet-paw:nth-child(5) {
-            animation-delay: 0.25s;
+            animation-delay: 1.5s;
         }
     
         .pet-paw:nth-child(6) {
-            animation-delay: 0s;
+            animation-delay: 1s;
         }
     }
     
