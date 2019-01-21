@@ -336,6 +336,8 @@ class WebPet {
             const value: number = length / 2 * (1 + offset[distant]);
             target[direction] = value;
         });
+        target["left"] = orgin.left + 600;
+        target["top"] = orgin.top;
 
         that.options.footPrint && (that.initFootPrint(orgin, target));
 
@@ -379,10 +381,18 @@ class WebPet {
         });
         //  总脚印数
         const paws: number = Math.ceil(z / 30);
+
+        const time = 5;
+        const head = time * 0.2;
+        const tail = time * 0.2;
+        const body = time - Math.floor(head) - Math.floor(tail);
+        //  每个区间展示的数量
+        const block = paws / time;
+
         //  设置脚印消失时间与追加脚印
         for (let i = 0; i < paws; i++) {
             const $paw = $(tpl.paw);
-            $paw.css("animation-delay", `${1 + paws / (2 * i)}s`);
+            // $paw.css("animation-delay", `${1 + paws / ((2 * i) || i)}s`);
             $pawList.append($paw);
         }
         //  挂载脚印模板
