@@ -63,6 +63,8 @@ class WebPet {
 
     private $operate;
 
+    private $pawWrap;
+
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
@@ -81,10 +83,10 @@ class WebPet {
             joke: true
         },
         statusImg: {
-            default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
-            hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/hover.png",
-            move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
-            drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
+            // default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
+            // hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/hover.png",
+            // move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
+            // drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
         },
         serverUrl: {},
         on: {
@@ -323,6 +325,7 @@ class WebPet {
      */
     private randomMove() {
         const that = this;
+        const $ = that.$;
         const orgin = that.options.position;
         const target = {
             top: 0,
@@ -339,11 +342,21 @@ class WebPet {
         target["left"] = orgin.left + 600;
         target["top"] = orgin.top;
 
-        that.options.footPrint && (that.initFootPrint(orgin, target));
+        that.options.footPrint && (that.initPawWrap(orgin, target));
+
+        let i = setInterval(function(){
+            const $paw = $(tpl.paw);
+            console.info(that.$container.offset().left);
+            $paw.css({
+                bottom: that.$container.offset().left - orgin.left
+            })
+            that.$pawWrap.find(".pet-paw-list").append($paw);
+        }, 500);
 
         that.$container.stop().animate(target, {
             duration: 5000,
             complete: () => {
+                clearInterval(i);
                 that.updatePosition({ top: target.top, left: target.left });
             }
         });
@@ -351,11 +364,11 @@ class WebPet {
     }
 
     /**
-     * 生成脚印
+     * 生成脚印外壳
      * @param orgin 
      * @param target 
      */
-    private initFootPrint(orgin, target) {
+    private initPawWrap(orgin, target) {
         const $ = this.$;
         //  x轴坐标
         const x: number = Math.abs(target.left - orgin.left);
@@ -379,23 +392,9 @@ class WebPet {
             "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
             "height": z
         });
-        //  总脚印数
-        const paws: number = Math.ceil(z / 30);
-
-        const time = 5;
-        const head = time * 0.2;
-        const tail = time * 0.2;
-        const body = time - Math.floor(head) - Math.floor(tail);
-        //  每个区间展示的数量
-        const block = paws / time;
-
-        //  设置脚印消失时间与追加脚印
-        for (let i = 0; i < paws; i++) {
-            const $paw = $(tpl.paw);
-            // $paw.css("animation-delay", `${1 + paws / ((2 * i) || i)}s`);
-            $pawList.append($paw);
-        }
-        //  挂载脚印模板
+        //  设置脚印外壳属性
+        this.$pawWrap = $pawWrap;
+        //  挂载脚印外壳
         $(window.document.body).prepend($pawWrap);
     }
 

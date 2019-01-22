@@ -54,12 +54,20 @@ const pawList: string =
     </div>
     `;
 
-//  单个爪子的外壳
+//  一对爪子
 const paw: string = 
-    `<div class="pet-paw">
-        <svg class="icon">
-            <use xlink:href="#pet-paw-svg"></use>
-        </svg>
+    `
+    <div class="temp">
+        <div class="pet-paw">
+            <svg class="icon">
+                <use xlink:href="#pet-paw-svg"></use>
+            </svg>
+        </div>
+        <div class="pet-paw">
+            <svg class="icon">
+                <use xlink:href="#pet-paw-svg"></use>
+            </svg>
+        </div>
     </div>
     `;
 

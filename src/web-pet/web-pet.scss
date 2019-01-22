@@ -18,6 +18,7 @@ div.web-pet{
         cursor: move;
         background-repeat: no-repeat;
         background-size: 100%;
+        background: #ccc;
     }
 
     & > div.pet-menu{
@@ -150,6 +151,10 @@ div.web-pet{
         & > svg{
             display: none;
         }
+
+        .temp{
+            position: absolute;
+        }
     
         .pet-paw {
             width: 20px;
@@ -174,86 +179,7 @@ div.web-pet{
         .pet-paw:nth-child(even) {
             transform: rotate(10deg) translate(125%, 0);
         }
-    
-        .pet-paw:nth-child(1) {
-            animation-delay: 5s;
-        }
-    
-        .pet-paw:nth-child(2) {
-            animation-delay: 4.9s;
-        }
-    
-        .pet-paw:nth-child(3) {
-            animation-delay: 4.6s;
-        }
-    
-        .pet-paw:nth-child(4) {
-            animation-delay: 4.4s;
-        }
-    
-        .pet-paw:nth-child(5) {
-            animation-delay: 4.2s;
-        }
-    
-        .pet-paw:nth-child(6) {
-            animation-delay: 3.9s;
-        }
 
-        .pet-paw:nth-child(7) {
-            animation-delay: 3.6s;
-        }
-
-        .pet-paw:nth-child(8) {
-            animation-delay: 3.3s;
-        }
-
-        .pet-paw:nth-child(9) {
-            animation-delay: 3s;
-        }
-
-        .pet-paw:nth-child(10) {
-            animation-delay: 2.7s;
-        }
-
-        .pet-paw:nth-child(11) {
-            animation-delay: 2.6s;
-        }
-
-        .pet-paw:nth-child(12) {
-            animation-delay: 2.3s;
-        }
-
-        .pet-paw:nth-child(13) {
-            animation-delay: 2.2s;
-        }
-
-        .pet-paw:nth-child(14) {
-            animation-delay: 2s;
-        }
-
-        .pet-paw:nth-child(15) {
-            animation-delay: 1.6s;
-        }
-
-        .pet-paw:nth-child(16) {
-            animation-delay: 1.5s;
-        }
-
-        .pet-paw:nth-child(17) {
-            animation-delay: 1.4s;
-        }
-
-        .pet-paw:nth-child(18) {
-            animation-delay: 1.3s;
-        }
-
-        .pet-paw:nth-child(19) {
-            animation-delay: 1.2s;
-        }
-
-        .pet-paw:nth-child(20) {
-            animation-delay: 1s;
-        }
     }
     
     @keyframes pawAnimation {
