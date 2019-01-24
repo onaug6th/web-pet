@@ -151,16 +151,13 @@ div.web-pet{
         & > svg{
             display: none;
         }
-
-        .paws{
-            position: absolute;
-        }
-    
+ 
         .pet-paw {
             width: 20px;
             height: 30px;
             animation: 3050ms pawAnimation ease-in 1;
             opacity: 0;
+            position: absolute;
     
             svg {
                 width: 100%;
@@ -170,14 +167,14 @@ div.web-pet{
             .icon {
                 fill: currentColor;
             }
-        }
-    
-        .pet-paw:nth-child(odd) {
-            transform: rotate(-10deg);
-        }
-    
-        .pet-paw:nth-child(even) {
-            transform: rotate(10deg) translate(125%, 0);
+            // 第一个脚
+            &:nth-child(odd) {
+                transform: rotate(-10deg);
+            }
+            // 第二个脚
+            &:nth-child(even) {
+                transform: rotate(10deg) translate(125%, 0);
+            }
         }
 
     }

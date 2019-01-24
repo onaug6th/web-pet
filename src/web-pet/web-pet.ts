@@ -272,7 +272,7 @@ class WebPet {
             })
             .mousedown(function (e: MouseEvent) {
                 if (e.which == 3) {
-                    that.toggleMenu("show");
+                    that.toggleMenu();
                 }
                 _move = true;
                 _x = e.pageX - parseInt($container.css("left"));
@@ -337,7 +337,7 @@ class WebPet {
         });
 
         let pawWrap;
-        let pawStart: number = 50;
+        let pawStart: number = 30;
 
         that.options.footPrint && (pawWrap = that.initPawWrap(orgin, target));
 
@@ -355,15 +355,26 @@ class WebPet {
                             bottom: diagonal
                         });
                         pawWrap.$pawList.append($paw);
-                        pawStart = diagonal + 50;
+                        pawStart = diagonal + 30;
                     }
                 }
             },
             complete: function () {
                 pawStart = null;
+                that.clearPawWrap();
             }
         });
         return that;
+    }
+
+    /**
+     * 清除脚印移动外壳
+     */
+    private clearPawWrap() {
+        const that = this;
+        setTimeout(function () {
+            that.$(".pet-paw-warp").remove();
+        }, 1000);
     }
 
     /**
@@ -383,9 +394,9 @@ class WebPet {
     private initPawWrap(orgin, target) {
         const $ = this.$;
         //  外壳到达x轴坐标
-        const x: number = Math.abs(target.left - orgin.left - this.$container.width() * 0.4);
+        const x: number = Math.abs(target.left - orgin.left);
         //  外壳到达y轴坐标
-        const y: number = Math.abs(target.top - orgin.top - this.$container.height() * 0.4);
+        const y: number = Math.abs(target.top - orgin.top);
         //  对角线长度
         const diagonal: number = this.countDiagonal(x, y);
         //  对角线角度
@@ -541,8 +552,8 @@ class WebPet {
      * 切换显示菜单
      * @param type 
      */
-    private toggleMenu(type: string = "show") {
-        let method: string = type == "show" ? "fadeIn" : "fadeOut";
+    private toggleMenu(type?: string) {
+        let method: string = type ? type == "show" ? "fadeIn" : "fadeOut" : "fadeToggle";
         this.$menu["stop"]()[method]();
         return this;
     }
