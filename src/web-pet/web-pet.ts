@@ -63,8 +63,6 @@ class WebPet {
 
     private $operate;
 
-    private $pawWrap;
-
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
@@ -83,15 +81,15 @@ class WebPet {
             joke: true
         },
         statusImg: {
-            // default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
-            // hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/hover.png",
-            // move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
-            // drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
+            default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
+            hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/hover.png",
+            move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
+            drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
         },
         serverUrl: {},
         on: {
-            create: () => { },
-            mounted: () => { }
+            create() { },
+            mounted() { }
         }
     };
 
@@ -160,13 +158,13 @@ class WebPet {
             const $content = $(tpl[`${i}Content`]);
             const $return_btn = $(tpl.returnBtn);
 
-            that.handleContentEvent($content, i);
+            that.onContentEvent($content, i);
 
-            $btn.on("click", () => {
+            $btn.on("click", function () {
                 return that.toggleOperateContent(i);
             });
 
-            $return_btn.on("click", () => {
+            $return_btn.on("click", function () {
                 return that.toggleOperateContent();
             });
 
@@ -179,13 +177,13 @@ class WebPet {
     }
 
     /**
-     * 处理操作区域事件
+     * 监听操作区域事件
      * @param $content 
      * @param type 切换的类型
      */
-    private handleContentEvent($content, type: string) {
+    private onContentEvent($content, type: string) {
         if (type == "chat") {
-            $content.on("keydown", (e: KeyboardEvent) => {
+            $content.on("keydown", function (e: KeyboardEvent) {
                 if (e.keyCode == 13) {
 
                 }
@@ -226,7 +224,7 @@ class WebPet {
         //     that.randomMove();
         // }, 20000));
 
-        $(document).mousemove((e: MouseEvent) => {
+        $(document).mousemove(function (e: MouseEvent) {
             if (_move) {
                 that.changeStatus("move");
                 const x: number = e.pageX - _x;
@@ -239,20 +237,19 @@ class WebPet {
                         left: x
                     };
                     $container.css(position);
-                    that.updatePosition(position)
                     isMove = true;
                 }
             }
-        }).mouseup(() => {
+        }).mouseup(function () {
             _move = false;
         });
 
         $container
-            .mouseover(() => {
+            .mouseover(function () {
                 that.toggleOperateBox("show");
                 that.changeStatus("move");
             })
-            .mouseout((e) => {
+            .mouseout(function (e) {
                 const $target = e.target;
                 const nodeName = $target.nodeName;
                 const className = $target.className;
@@ -265,7 +262,7 @@ class WebPet {
             });
 
         $pet
-            .click(() => {
+            .click(function () {
                 if (!isMove) {
                     that.changeStatus("move");
                     that.randomMove();
@@ -273,7 +270,7 @@ class WebPet {
                     isMove = false;
                 }
             })
-            .mousedown((e: MouseEvent) => {
+            .mousedown(function (e: MouseEvent) {
                 if (e.which == 3) {
                     that.toggleMenu("show");
                 }
@@ -294,7 +291,6 @@ class WebPet {
     private done() {
         const options = this.options;
         this.$(window.document.body).append(this.$container);
-        this.updatePosition();
         this.eventEmiter("mounted");
         console.info(`hello, my name is ${options.name}`);
         return this;
@@ -326,7 +322,7 @@ class WebPet {
     private randomMove() {
         const that = this;
         const $ = that.$;
-        const orgin = that.options.position;
+        const orgin = that.$container.offset();
         const target = {
             top: 0,
             left: 0
@@ -339,45 +335,61 @@ class WebPet {
             const value: number = length / 2 * (1 + offset[distant]);
             target[direction] = value;
         });
-        target["left"] = orgin.left + 600;
-        target["top"] = orgin.top;
 
-        that.options.footPrint && (that.initPawWrap(orgin, target));
+        let pawWrap;
+        let pawStart: number = 50;
 
-        let i = setInterval(function(){
-            const $paw = $(tpl.paw);
-            console.info(that.$container.offset().left);
-            $paw.css({
-                bottom: that.$container.offset().left - orgin.left
-            })
-            that.$pawWrap.find(".pet-paw-list").append($paw);
-        }, 500);
+        that.options.footPrint && (pawWrap = that.initPawWrap(orgin, target));
 
         that.$container.stop().animate(target, {
             duration: 5000,
-            complete: () => {
-                clearInterval(i);
-                that.updatePosition({ top: target.top, left: target.left });
+            step: function () {
+                if (pawWrap) {
+                    const nowPosition = that.$container.offset();
+                    const x: number = Math.abs(nowPosition.left - orgin.left);
+                    const y: number = Math.abs(nowPosition.top - orgin.top);
+                    const diagonal: number = that.countDiagonal(x, y);
+                    if (diagonal - pawStart > 0) {
+                        const $paw = $(tpl.paw);
+                        $paw.css({
+                            bottom: diagonal
+                        });
+                        pawWrap.$pawList.append($paw);
+                        pawStart = diagonal + 50;
+                    }
+                }
+            },
+            complete: function () {
+                pawStart = null;
             }
         });
         return that;
     }
 
     /**
-     * 生成脚印外壳
+     * 计算对角线长度
+     * @param x 
+     * @param y 
+     */
+    private countDiagonal(x: number, y: number) {
+        return Math.sqrt(x * x + y * y);
+    }
+
+    /**
+     * 生成脚印路径外壳
      * @param orgin 
      * @param target 
      */
     private initPawWrap(orgin, target) {
         const $ = this.$;
-        //  x轴坐标
-        const x: number = Math.abs(target.left - orgin.left);
-        //  y轴坐标
-        const y: number = Math.abs(target.top - orgin.top);
-        //  z轴长度
-        const z: number = Math.sqrt(x * x + y * y);
+        //  外壳到达x轴坐标
+        const x: number = Math.abs(target.left - orgin.left - this.$container.width() * 0.4);
+        //  外壳到达y轴坐标
+        const y: number = Math.abs(target.top - orgin.top - this.$container.height() * 0.4);
+        //  对角线长度
+        const diagonal: number = this.countDiagonal(x, y);
         //  对角线角度
-        const angle: number = Math.round((Math.asin(y / z) / Math.PI * 180));
+        const angle: number = Math.round((Math.asin(y / diagonal) / Math.PI * 180));
 
         //  脚印外壳
         const $pawWrap = $(tpl.pawList);
@@ -390,12 +402,17 @@ class WebPet {
         //  设置旋转角度及高度
         $pawList.css({
             "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
-            "height": z
+            "height": diagonal
         });
-        //  设置脚印外壳属性
-        this.$pawWrap = $pawWrap;
         //  挂载脚印外壳
         $(window.document.body).prepend($pawWrap);
+        return {
+            x,
+            y,
+            diagonal,
+            angle,
+            $pawList
+        }
     }
 
     /**

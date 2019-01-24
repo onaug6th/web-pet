@@ -18,7 +18,6 @@ div.web-pet{
         cursor: move;
         background-repeat: no-repeat;
         background-size: 100%;
-        background: #ccc;
     }
 
     & > div.pet-menu{
@@ -141,6 +140,7 @@ div.web-pet{
 
     .pet-paw-list {
         position: absolute;
+        width: 10px;
         left: 50%;
         bottom: 25%;
         transform-origin: 100% 100%;
@@ -152,7 +152,7 @@ div.web-pet{
             display: none;
         }
 
-        .temp{
+        .paws{
             position: absolute;
         }
     

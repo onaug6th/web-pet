@@ -54,10 +54,10 @@ const pawList: string =
     </div>
     `;
 
-//  一对爪子
+//  爪子列表——一对爪子
 const paw: string = 
     `
-    <div class="temp">
+    <div class="paws">
         <div class="pet-paw">
             <svg class="icon">
                 <use xlink:href="#pet-paw-svg"></use>
