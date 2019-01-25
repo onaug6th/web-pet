@@ -1,40 +1,49 @@
 //  容器
 const container: string = `<div class="web-pet"></div>`;
 
-//  pet
-const pet: string = `<div class="pet"></div>`;
+    //  pet
+    const pet: string = `<div class="pet"></div>`;
 
-//  菜单
-const menu: string =
-    `<div class="pet-menu">
-        <ul>
-            <li>聊天</li>
-        </ul>
-    </div>`;
+    //  消息框
+    const message: string = 
+        `<section class="pet-message">
+            <div class="pet-msg">
+                
+            </div>
+        </section>
+        `;
 
-//  操作区域
-const operate: string =
-    `<div class="pet-operate">
-        <div class="switch-anmiate">
-            <div class="pet-operate-list"></div>
-        </div>
-    </div>`;
+    //  菜单
+    const menu: string =
+        `<div class="pet-menu">
+            <ul>
+                <li>聊天</li>
+            </ul>
+        </div>`;
 
-//  操作区域-返回按钮
-const returnBtn: string =
-    `<button class="return-btn">取消</button>`;
+    //  操作区域
+    const operate: string =
+        `<div class="pet-operate">
+            <div class="switch-animate">
+                <div class="pet-operate-list"></div>
+            </div>
+        </div>`;
 
-//  操作区域-聊天按钮
-const chatBtn: string =
-    `<a>
-        <img class="emoji" alt="chat" height="20" width="20" src="https://assets-cdn.github.com/images/icons/emoji/speech_balloon.png">
-    </a>`;
+        //  操作区域-返回按钮
+        const returnBtn: string =
+            `<button class="return-btn">取消</button>`;
 
-//  操作区域-聊天区域
-const chatContent: string =
-    `<div class="pet-operate-content" data-type="chat">
-        <input />
-    </div>`;
+        //  操作区域-聊天按钮
+        const chatBtn: string =
+            `<a>
+                <img class="emoji" alt="chat" height="20" width="20" src="https://assets-cdn.github.com/images/icons/emoji/speech_balloon.png">
+            </a>`;
+
+        //  操作区域-聊天区域
+        const chatContent: string =
+            `<div class="pet-operate-content" data-type="chat">
+                <input class="pet-chat"/>
+            </div>`;
 
 //  爪子列表
 const pawList: string =
@@ -54,18 +63,19 @@ const pawList: string =
     </div>
     `;
 
-//  爪子列表——单个爪子
-const paw: string = 
-    `<div class="pet-paw">
-        <svg class="icon">
-            <use xlink:href="#pet-paw-svg"></use>
-        </svg>
-    </div>
-    `;
+    //  爪子列表——单个爪子
+    const paw: string = 
+        `<div class="pet-paw">
+            <svg class="icon">
+                <use xlink:href="#pet-paw-svg"></use>
+            </svg>
+        </div>
+        `;
 
 export {
     container,
     pet,
+    message,
     menu,
     operate,
     returnBtn,

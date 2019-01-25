@@ -9,9 +9,10 @@ div.web-pet{
     height: 100px;
     position: fixed;
     left: 160px;
-    top: 0px;
+    top: 160px;
     z-index: 9999;
 
+    //  本体
     & > div.pet{
         width: 100px;
         height: 100px;
@@ -20,6 +21,35 @@ div.web-pet{
         background-size: 100%;
     }
 
+    //  消息
+    & > section.pet-message{
+
+        position: absolute;
+
+        width: 0px;
+        height: 0px;
+
+        right: 100px;
+        bottom: 50px;
+
+        background: white;
+        border-radius: 10px;
+        text-align: center;
+        padding-top: 10px;
+        color: #555;
+        z-index: 1;
+        box-shadow:
+                -4px 0 4px rgba(7,17,27,.1),
+                4px 0 4px rgba(7,17,27,.1), 
+                0 -4px 4px rgba(7,17,27,.1),
+                0 4px 4px rgba(7,17,27,.1);
+
+        .pet-msg{
+            display: none;
+        }
+    }
+
+    //  菜单
     & > div.pet-menu{
         width: 90px;
         height: 100px;
@@ -56,6 +86,7 @@ div.web-pet{
         }
     }
 
+    //  操作区域
     & > div.pet-operate{
         position: absolute;
         bottom: -60px;
@@ -75,7 +106,7 @@ div.web-pet{
             position: relative;
             top: 0;
 
-            &.switch-anmiate{
+            &.switch-animate{
                 transition: top 0.5s;
             }
 
@@ -106,7 +137,7 @@ div.web-pet{
                     cursor: pointer;
                 }
     
-                input{
+                .pet-chat{
                     float: left;
                     width: 79%;
                     display: block;

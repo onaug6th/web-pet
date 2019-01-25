@@ -36,12 +36,20 @@ interface WebPetOptions {
         //  拖动
         drop?: string
     }
-    //  服务端地址
-    serverUrl?: {
-        //  学习
-        learn?: string
-        //  回答
-        answer?: string
+    //  服务端配置
+    server?: {
+        //  回答时的配置
+        answer?: {
+            url: string,
+            dataPath?: string,
+            [propName: string]: any
+        }
+        //  学习时的配置
+        learn?: {
+            url: string,
+            dataPath?: string,
+            [propName: string]: any
+        }
     }
     //  事件
     on?: {
@@ -59,6 +67,10 @@ class WebPet {
     private $container;
     //  pet
     private $pet;
+    //  消息外壳
+    private $message;
+    //  消息内容
+    private $msg;
     //  菜单
     private $menu;
     //  操作区域
@@ -91,7 +103,18 @@ class WebPet {
             move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
             drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
         },
-        serverUrl: {},
+        server: {
+            answer: {
+                url: "",
+                method: "POST",
+                dataPath: "data"
+            },
+            learn: {
+                url: "",
+                method: "POST",
+                dataPath: "data"
+            }
+        },
         on: {
             create() { },
             mounted() { }
@@ -136,13 +159,16 @@ class WebPet {
         const $ = this.$;
         const $container = $(tpl.container);
         const $pet = $(tpl.pet);
+        const $message = $(tpl.message);
         const $menu = $(tpl.menu);
         const $operate = this.initOperate();
 
-        $container.append($pet, $menu, $operate);
+        $container.append($pet, $message, $menu, $operate);
 
         this.$container = $container;
         this.$pet = this.$container.find("div.pet");
+        this.$message = this.$container.find("section.pet-message");
+        this.$msg = this.$message.find("div.pet-msg");
         this.$menu = this.$container.find("div.pet-menu");
         this.$operate = this.$container.find("div.pet-operate");
         this.changeStatus("default");
@@ -174,7 +200,7 @@ class WebPet {
             });
 
             $operate.find("div.pet-operate-list").append($btn);
-            $operate.find("div.switch-anmiate").append(
+            $operate.find("div.switch-animate").append(
                 $content.append($return_btn)
             );
         }
@@ -187,10 +213,11 @@ class WebPet {
      * @param type 切换的类型
      */
     private onContentEvent($content, type: string) {
+        const that = this;
         if (type == "chat") {
             $content.on("keydown", function (e: KeyboardEvent) {
                 if (e.keyCode == 13) {
-
+                    that.message(e.target["value"]);
                 }
             });
         }
@@ -201,7 +228,7 @@ class WebPet {
      * @param type 切换的类型
      */
     private toggleOperateContent(type?: string) {
-        const $switch = this.$operate.find(".switch-anmiate");
+        const $switch = this.$operate.find(".switch-animate");
         const $target = $switch.find(`[data-type=${type}]`);
         const distant = -50 * $target.siblings().length;
         if (type) {
@@ -209,6 +236,42 @@ class WebPet {
         } else {
             $switch.css("top", `0px`);
         }
+    }
+
+    /**
+     * 
+     * @param value 
+     */
+    private message(value) {
+        const that = this;
+        const server = that.options.server;
+
+        server.answer.url ? that.answerFromServer(value) : (true);
+        that.cleanChatText();
+        that.$msg.text(value);
+        that.$message.animate(
+            {
+                height: 100,
+                width: 150
+            }, {
+                duration: 1000,
+                complete: function () {
+                    that.$msg.fadeIn();
+                }
+            }
+        );
+    }
+
+    /**
+     * 清除聊天区域内容
+     */
+    private cleanChatText() {
+        this.$operate.find(".pet-operate-content input").val("");
+    }
+
+    private answerFromServer(value) {
+        const server = this.options.server;
+        this.$.ajax(server.answer);
     }
 
     /**
@@ -225,9 +288,9 @@ class WebPet {
         let _x: number;
         let _y: number;
 
-        // that.options.action.randomMove && (window.setInterval(function () {
-        //     that.randomMove();
-        // }, 20000));
+        that.options.action.randomMove && (window.setInterval(function () {
+            that.randomMove();
+        }, 20000));
 
         $(document).mousemove(function (e: MouseEvent) {
             if (_move) {
@@ -250,23 +313,46 @@ class WebPet {
         });
 
         $container
-            .mouseover(function () {
-                that.toggleOperateBox("show");
-                that.changeStatus("move");
+            /**
+             * 鼠标经过时
+             * 1. 显示底部菜单
+             */
+            .mouseover(function (e: MouseEvent) {
+                const $target = e.target;
+                const className = $target["className"];
+                //  触摸聊天框，不会显示菜单
+                if (className !== "pet-message") {
+                    that.toggleOperateBox("show");
+                    that.changeStatus("move");
+                }
             })
+            /**
+             * 鼠标离开时
+             * 1. 隐藏底部菜单
+             */
             .mouseout(function (e: MouseEvent) {
                 const $target = e.target;
                 const nodeName = $target["nodeName"];
                 const className = $target["className"];
+                const activeEle = document.activeElement;
                 if (nodeName == "div" && className == "pet-operate") {
 
-                } else {
+                }
+                else if (activeEle.nodeName == "INPUT" && activeEle.className == "pet-chat") {
+
+                }
+                else {
                     that.toggleOperateBox("hide");
                 }
                 that.changeStatus("default");
             });
 
         $pet
+            /**
+             * 点击宠物本体时：
+             * 1. 随机乱跑
+             * 2. 改变状态
+             */
             .click(function () {
                 if (!isMove) {
                     that.changeStatus("move");
@@ -275,6 +361,11 @@ class WebPet {
                     isMove = false;
                 }
             })
+            /**
+             * 鼠标按下时
+             * 1. 若是右键，切换显示菜单
+             * 2. 拖动位置
+             */
             .mousedown(function (e: MouseEvent) {
                 if (e.which == 3) {
                     that.toggleMenu();
@@ -368,7 +459,7 @@ class WebPet {
             complete: function () {
                 pawStart = null;
                 that.changeStatus("default");
-                that.clearPawWrap();
+                that.cleanPawWrap();
             }
         });
         return that;
@@ -377,7 +468,7 @@ class WebPet {
     /**
      * 清除脚印移动外壳
      */
-    private clearPawWrap() {
+    private cleanPawWrap() {
         const that = this;
         setTimeout(function () {
             that.status !== "move" && that.pawWrapQueue.forEach(($pawWrap) => { $pawWrap.remove() });
@@ -466,8 +557,8 @@ class WebPet {
      * @param type 
      */
     private toggleOperateBox(type: string = "show") {
-        let method: string = type == "show" ? "fadeIn" : "fadeOut";
-        this.$operate["stop"]()[method]();
+        type = type == "show" ? "fadeIn" : "fadeOut";
+        this.$operate["stop"]()[type]();
         return this;
     }
 
@@ -476,8 +567,8 @@ class WebPet {
      * @param type 
      */
     private toggleMenu(type?: string) {
-        let method: string = type ? type == "show" ? "fadeIn" : "fadeOut" : "fadeToggle";
-        this.$menu["stop"]()[method]();
+        type = type ? type == "show" ? "fadeIn" : "fadeOut" : "fadeToggle";
+        this.$menu["stop"]()[type]();
         return this;
     }
 
