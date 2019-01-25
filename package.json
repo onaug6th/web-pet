@@ -3,7 +3,7 @@
   "version": "0.0.8",
   "description": "a pet for you webpage",
   "repository": "https://github.com/onaug6th/web-pet",
-  "main": "dist/index.js",
+  "main": "dist/webPet.min.js",
   "keywords": [
     "web-pet",
     "pet"
