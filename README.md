@@ -15,7 +15,7 @@ npm install web-pet
 Using script:
 
 ```html
-<script src="/dist/index.min.js"></script>
+<script src="/dist/webPet.min.js"></script>
 ```
 ## Example
 
@@ -25,7 +25,7 @@ import WebPet from "web-pet";
 const firstPet = new WebPet();
 
 const opt = {
-    ...
+  ...
 }
 
 const otherPet = new WebPet(opt);
@@ -41,7 +41,7 @@ You can customize your pet, his appearance and some behavior. is comming soon!
   action: {
     randomMove: true,
     sayMyself: true,
-    joke: true,
+    joke: true
   },
   statusImg: {
     
