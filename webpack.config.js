@@ -80,8 +80,8 @@ module.exports = {
         path: resolve('dist'),
         //  输出模式
         libraryTarget: 'umd',
-        // 入口 js 的打包输出文件名
-        filename: 'index.js'
+        //  打包输出文件名
+        filename: 'webPet.min.js'
     },
 
     resolve: {
@@ -141,8 +141,8 @@ module.exports = {
 */
 if (dev) {
     module.exports.serve = {
-        // 配置监听端口，默认值 8080
-        port: 8989,
+        // 配置监听端口，默认值 8626
+        port: 8626,
 
         // add: 用来给服务器的 koa 实例注入 middleware 增加功能
         add: app => { }
