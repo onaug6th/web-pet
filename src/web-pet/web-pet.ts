@@ -53,16 +53,21 @@ interface WebPetOptions {
 
 class WebPet {
 
+    //  私有jquery
     private $;
-
+    //  容器外壳
     private $container;
-
+    //  pet
     private $pet;
-
+    //  菜单
     private $menu;
-
+    //  操作区域
     private $operate;
-
+    //  状态
+    private status;
+    //  脚印外壳队列
+    private pawWrapQueue: Array<any> = [];
+    //  默认配置
     private options: WebPetOptions = {
         name: "pet",
         language: "mandarin",
@@ -249,10 +254,10 @@ class WebPet {
                 that.toggleOperateBox("show");
                 that.changeStatus("move");
             })
-            .mouseout(function (e) {
+            .mouseout(function (e: MouseEvent) {
                 const $target = e.target;
-                const nodeName = $target.nodeName;
-                const className = $target.className;
+                const nodeName = $target["nodeName"];
+                const className = $target["className"];
                 if (nodeName == "div" && className == "pet-operate") {
 
                 } else {
@@ -278,7 +283,7 @@ class WebPet {
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
             })
-            .bind("contextmenu", function (e) {
+            .bind("contextmenu", function (e: MouseEvent) {
                 return false;
             });
 
@@ -302,6 +307,7 @@ class WebPet {
      */
     private changeStatus(status: string) {
         const $pet = this.$pet;
+        this.status = status;
         $pet.attr("style", `background-image: url(${this.options.statusImg[status]})`);
         return this;
     }
@@ -361,6 +367,7 @@ class WebPet {
             },
             complete: function () {
                 pawStart = null;
+                that.changeStatus("default");
                 that.clearPawWrap();
             }
         });
@@ -373,7 +380,7 @@ class WebPet {
     private clearPawWrap() {
         const that = this;
         setTimeout(function () {
-            that.$(".pet-paw-warp").remove();
+            that.status !== "move" && that.pawWrapQueue.forEach(($pawWrap) => { $pawWrap.remove() });
         }, 1000);
     }
 
@@ -407,7 +414,7 @@ class WebPet {
         //  设置基础位置
         $pawWrap.css(orgin);
         //  目标位置象限
-        const quadrant: number = this.countQuadrant(orgin, target);
+        const quadrant: number = util.countQuadrant(orgin, target);
         //  脚印列表
         const $pawList = $pawWrap.find(".pet-paw-list");
         //  设置旋转角度及高度
@@ -415,8 +422,8 @@ class WebPet {
             "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
             "height": diagonal
         });
-        //  挂载脚印外壳
-        $(window.document.body).prepend($pawWrap);
+        //  挂载脚印外壳，并且推入脚印外壳队列
+        $(window.document.body).prepend($pawWrap), this.pawWrapQueue.push($pawWrap);
         return {
             x,
             y,
@@ -444,90 +451,6 @@ class WebPet {
         if (quadrant == 4) {
             return 90 - angle;
         }
-    }
-
-    /**
-     * 计算位置象限，待优化
-     * @param orgin 
-     * @param target 
-     */
-    private countQuadrant(orgin, target) {
-        const x: number = orgin.left;
-        const y: number = orgin.top;
-        const tx: number = target.left;
-        const ty: number = target.top;
-
-        //  1, 4
-        if (tx > x) {
-            //  1
-            if (ty > y) {
-                return 1;
-            }
-            //  4
-            if (ty < y) {
-                return 4;
-            }
-        }
-        //  2, 3
-        if (tx < x) {
-            //  2
-            if (ty < y) {
-                return 2;
-            }
-            //  3
-            if (ty > y) {
-                return 3;
-            }
-        }
-        if (ty == y) {
-            //  1, 2
-            if (ty > 0) {
-                //  1
-                if (tx > x) {
-                    return 1;
-                }
-                //  2
-                if (tx < x) {
-                    return 2;
-                }
-            }
-            //  3, 4
-            if (ty < 0) {
-                //  4
-                if (tx > x) {
-                    return 4;
-                }
-                //  3
-                if (tx < x) {
-                    return 3;
-                }
-            }
-        }
-        if (tx == x) {
-            //  1, 4
-            if (tx > 0) {
-                //  1
-                if (ty > y) {
-                    return 1;
-                }
-                //  4
-                if (ty < y) {
-                    return 4;
-                }
-            }
-            //  2, 3
-            if (tx < 0) {
-                //  2
-                if (ty > y) {
-                    return 2;
-                }
-                //  3
-                if (ty < y) {
-                    return 3;
-                }
-            }
-        }
-        return 4;
     }
 
     /**
