@@ -104,8 +104,23 @@ const countQuadrant: Function = function (orgin, target) {
     return 4;
 }
 
+/**
+ * 获取深层属性
+ * @param obj 对象
+ * @param path 属性
+ * @param separator 分隔符
+ */
+const getDeepAttrValue: Function = function (obj, path, separator) {
+    let value: any;
+    path.split(separator).forEach((item, i) => {
+        i ? value = value[item] : value = obj[item];
+    });
+    return value;
+}
+
 export {
     isFn,
     getJquery,
-    countQuadrant
+    countQuadrant,
+    getDeepAttrValue
 }

@@ -107,12 +107,14 @@ class WebPet {
             answer: {
                 url: "",
                 method: "POST",
-                dataPath: "data"
+                dataPath: "data",
+                separator: "."
             },
             learn: {
                 url: "",
                 method: "POST",
-                dataPath: "data"
+                dataPath: "data",
+                separator: "."
             }
         },
         on: {
@@ -148,6 +150,7 @@ class WebPet {
         options && (this.options = this.$.extend(true, {}, this.options, options));
         this.eventEmiter("create")
             .init()
+            .checkDictionary()
             .actionEvent()
             .done();
     }
@@ -173,6 +176,20 @@ class WebPet {
         this.$operate = this.$container.find("div.pet-operate");
         this.changeStatus("default");
 
+        return this;
+    }
+
+    /**
+     * 检查本地词典
+     */
+    private checkDictionary() {
+        const defaultDictionary: Array<object> = [
+            {
+                key: ["你好", "hello", "雷猴"],
+                value: "你好啊！"
+            }
+        ];
+        !localStorage.getItem("petDictionary") && localStorage.setItem("petDictionary", JSON.stringify(defaultDictionary));
         return this;
     }
 
@@ -217,7 +234,7 @@ class WebPet {
         if (type == "chat") {
             $content.on("keydown", function (e: KeyboardEvent) {
                 if (e.keyCode == 13) {
-                    that.message(e.target["value"]);
+                    that.initMessage(e.target["value"]);
                 }
             });
         }
@@ -239,16 +256,46 @@ class WebPet {
     }
 
     /**
-     * 
-     * @param value 
+     * 分发回复消息处理
+     * @param value 用户输入的内容
      */
-    private message(value) {
+    private initMessage(value) {
         const that = this;
         const server = that.options.server;
-
-        server.answer.url ? that.answerFromServer(value) : (true);
         that.cleanChatText();
-        that.$msg.text(value);
+
+        //  当存在服务端配置
+        if (server.answer.url) {
+            that.answerFromServer(value);
+        }
+        //  否则本地读取词典
+        else {
+            that.handleMessage(value);
+        }
+    }
+
+    /**
+     * 处理消息
+     * @param value 
+     */
+    private handleMessage(value) {
+        const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
+        let answerText: string = "";
+        petDictionary.forEach(item => {
+            if (item.key.includes(value)) {
+                answerText = item.value;
+            }
+        });
+        this.messageEnd(answerText || "抱歉，我不知道怎么回答。");
+    }
+
+    /**
+     * 将消息显示到界面上
+     * @param answerText 回答内容
+     */
+    private messageEnd(answerText) {
+        const that = this;
+        that.$msg.text(answerText);
         that.$message.animate(
             {
                 height: 100,
@@ -257,9 +304,29 @@ class WebPet {
                 duration: 1000,
                 complete: function () {
                     that.$msg.fadeIn();
+                    that.hideMessageBox();
                 }
             }
         );
+    }
+
+    /**
+     * 隐藏消息框
+     * @param time 多久
+     */
+    private hideMessageBox(time?) {
+        const that = this;
+        setTimeout(function () {
+            that.$msg.text("");
+            that.$message.animate(
+                {
+                    height: 0,
+                    width: 0
+                }, {
+                    duration: 1500
+                }
+            );
+        }, time || 5000);
     }
 
     /**
@@ -269,9 +336,23 @@ class WebPet {
         this.$operate.find(".pet-operate-content input").val("");
     }
 
+    /**
+     * 根据服务端配置，请求拉取消息
+     * @param value 用户输入的内容
+     */
     private answerFromServer(value) {
+        const $ = this.$;
         const server = this.options.server;
-        this.$.ajax(server.answer);
+        const opt = $.extend(true, server.answer, {
+            data: {
+                msg: value
+            },
+            success: function (result) {
+                const answerText = util.getDeepAttrValue(result, opt.dataPath, opt.separator);
+                this.messageEnd(answerText);
+            }
+        });
+        $.ajax(opt);
     }
 
     /**
@@ -335,9 +416,11 @@ class WebPet {
                 const nodeName = $target["nodeName"];
                 const className = $target["className"];
                 const activeEle = document.activeElement;
+                //  触摸区域为操作区域不隐藏
                 if (nodeName == "div" && className == "pet-operate") {
 
                 }
+                //  当前激活控件为聊天窗口，不隐藏
                 else if (activeEle.nodeName == "INPUT" && activeEle.className == "pet-chat") {
 
                 }
