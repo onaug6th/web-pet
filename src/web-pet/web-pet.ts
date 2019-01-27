@@ -75,10 +75,14 @@ class WebPet {
     private $menu;
     //  操作区域
     private $operate;
-    //  状态
-    private status;
+    /**
+     * 状态
+     * defalut  默认
+     * move     移动
+     */
+    private $status;
     //  脚印外壳队列
-    private pawWrapQueue: Array<any> = [];
+    private $pawWrapQueue: Array<any> = [];
     //  默认配置
     private options: WebPetOptions = {
         name: "pet",
@@ -259,7 +263,7 @@ class WebPet {
      * 分发回复消息处理
      * @param value 用户输入的内容
      */
-    private initMessage(value) {
+    private initMessage(value: string) {
         const that = this;
         const server = that.options.server;
         that.cleanChatText();
@@ -278,7 +282,7 @@ class WebPet {
      * 处理消息
      * @param value 
      */
-    private handleMessage(value) {
+    private handleMessage(value: string) {
         const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
         let answerText: string = "";
         petDictionary.forEach(item => {
@@ -293,10 +297,10 @@ class WebPet {
      * 将消息显示到界面上
      * @param answerText 回答内容
      */
-    private messageEnd(answerText) {
+    private messageEnd(answerText: string) {
         const that = this;
         that.$msg.text(answerText);
-        that.$message.animate(
+        !that.$message.width() && that.$message.animate(
             {
                 height: 100,
                 width: 150
@@ -404,6 +408,7 @@ class WebPet {
                 //  触摸聊天框，不会显示菜单
                 if (className !== "pet-message") {
                     that.toggleOperateBox("show");
+                    //  睁开眼睛
                     that.changeStatus("move");
                 }
             })
@@ -427,7 +432,8 @@ class WebPet {
                 else {
                     that.toggleOperateBox("hide");
                 }
-                that.changeStatus("default");
+                //  如果不是在移动中，闭上眼睛
+                that.$status !== "move" && that.changeStatus("default");
             });
 
         $pet
@@ -438,7 +444,6 @@ class WebPet {
              */
             .click(function () {
                 if (!isMove) {
-                    that.changeStatus("move");
                     that.randomMove();
                 } else {
                     isMove = false;
@@ -481,7 +486,7 @@ class WebPet {
      */
     private changeStatus(status: string) {
         const $pet = this.$pet;
-        this.status = status;
+        this.$status = status;
         $pet.attr("style", `background-image: url(${this.options.statusImg[status]})`);
         return this;
     }
@@ -520,7 +525,7 @@ class WebPet {
         let pawStart: number = 30;
 
         that.options.footPrint && (pawWrap = that.initPawWrap(orgin, target));
-
+        that.changeStatus("move");
         that.$container.stop().animate(target, {
             duration: 5000,
             step: function () {
@@ -554,7 +559,7 @@ class WebPet {
     private cleanPawWrap() {
         const that = this;
         setTimeout(function () {
-            that.status !== "move" && that.pawWrapQueue.forEach(($pawWrap) => { $pawWrap.remove() });
+            that.$status !== "move" && that.$pawWrapQueue.forEach(($pawWrap) => { $pawWrap.remove() });
         }, 1000);
     }
 
@@ -597,7 +602,7 @@ class WebPet {
             "height": diagonal
         });
         //  挂载脚印外壳，并且推入脚印外壳队列
-        $(window.document.body).prepend($pawWrap), this.pawWrapQueue.push($pawWrap);
+        $(window.document.body).prepend($pawWrap), this.$pawWrapQueue.push($pawWrap);
         return {
             x,
             y,
