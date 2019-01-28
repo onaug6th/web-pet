@@ -133,7 +133,9 @@ class WebPet {
      */
     constructor(options?: WebPetOptions) {
         const that = this;
-        if (!window) throw new Error("抱歉，我只能在浏览器中花里胡哨");
+        if (!window) {
+            throw new Error("sorry, i just can play in browser.")
+        };
 
         if (!window["jQuery"] || !window["$"].fn) {
             util.getJquery().then(() => {
@@ -260,84 +262,24 @@ class WebPet {
     }
 
     /**
-     * 分发回复消息处理
+     * 根据配置，进行信息处理分发
      * @param value 用户输入的内容
      */
     private initMessage(value: string) {
-        const that = this;
-        const server = that.options.server;
-        that.cleanChatText();
+        const server = this.options.server;
+        //  清空输入框内容
+        this.$operate.find(".pet-operate-content input").val("");
+        //  清空消息框内容，并隐藏
+        this.$msg.text("").hide();
 
         //  当存在服务端配置
         if (server.answer.url) {
-            that.answerFromServer(value);
+            this.answerFromServer(value);
         }
-        //  否则本地读取词典
+        //  否则本地储存读取词典
         else {
-            that.handleMessage(value);
+            this.answerFromBrowser(value);
         }
-    }
-
-    /**
-     * 处理消息
-     * @param value 
-     */
-    private handleMessage(value: string) {
-        const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
-        let answerText: string = "";
-        petDictionary.forEach(item => {
-            if (item.key.includes(value)) {
-                answerText = item.value;
-            }
-        });
-        this.messageEnd(answerText || "抱歉，我不知道怎么回答。");
-    }
-
-    /**
-     * 将消息显示到界面上
-     * @param answerText 回答内容
-     */
-    private messageEnd(answerText: string) {
-        const that = this;
-        that.$msg.text(answerText);
-        !that.$message.width() && that.$message.animate(
-            {
-                height: 100,
-                width: 150
-            }, {
-                duration: 1000,
-                complete: function () {
-                    that.$msg.fadeIn();
-                    that.hideMessageBox();
-                }
-            }
-        );
-    }
-
-    /**
-     * 隐藏消息框
-     * @param time 多久
-     */
-    private hideMessageBox(time?) {
-        const that = this;
-        setTimeout(function () {
-            that.$msg.text("");
-            that.$message.animate(
-                {
-                    height: 0,
-                    width: 0
-                }, {
-                    duration: 1500
-                }
-            );
-        }, time || 5000);
-    }
-
-    /**
-     * 清除聊天区域内容
-     */
-    private cleanChatText() {
-        this.$operate.find(".pet-operate-content input").val("");
     }
 
     /**
@@ -357,6 +299,84 @@ class WebPet {
             }
         });
         $.ajax(opt);
+    }
+
+    /**
+     * 处理消息
+     * @param value 
+     */
+    private answerFromBrowser(value: string) {
+        const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
+        let answerText: string = "";
+        petDictionary.forEach(item => {
+            if (item.key.includes(value)) {
+                answerText = item.value;
+            }
+        });
+        this.messageEnd(answerText || "抱歉，我不知道怎么回答。");
+    }
+
+    /**
+     * 将消息显示到界面上，并根据情况隐藏消息框
+     * @param answerText 回答内容
+     */
+    private messageEnd(answerText: string) {
+        const that = this;
+        that.$msg.text(answerText);
+        that.$message.width() ?
+            (
+                that.$msg.fadeIn(),
+                that.msgCountDown(true)
+            ) :
+            that.$message.animate(
+                {
+                    height: 100,
+                    width: 150
+                }, {
+                    duration: 1000,
+                    complete: function () {
+                        that.$msg.fadeIn();
+                        that.msgCountDown();
+                    }
+                }
+            );
+    }
+
+    /**
+     * 消息框隐藏倒计时
+     * @param extend 延长时间
+     */
+    private msgCountDown(extend?: boolean) {
+        const that = this;
+        const $msg = that.$msg;
+        $msg.data("countDown", 5);
+        if (!extend) {
+            let interval = setInterval(function () {
+                const t = $msg.data("countDown");
+                $msg.data("countDown", t - 1).attr("data-countDown", t - 1);
+                if (t === 0) {
+                    that.hideMessageBox();
+                    clearInterval(interval);
+                    interval = null;
+                }
+            }, 1000);
+        }
+    }
+
+    /**
+     * 隐藏消息框
+     */
+    private hideMessageBox() {
+        this.$msg.fadeOut().text("");
+        this.$message.animate(
+            {
+                height: 0,
+                width: 0
+            },
+            {
+                duration: 1500
+            }
+        );
     }
 
     /**
