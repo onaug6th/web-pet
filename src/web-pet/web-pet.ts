@@ -8,22 +8,24 @@ import './web-pet.scss';
 interface WebPetOptions {
     //  名称
     name?: string
-    //  语言
-    language?: string
-    /**
-     * 性格
-     */
-    character?: string
     //  脚印
     footPrint?: boolean
+    //  页面关闭时是否上报数据
+    report?: boolean
+    //  操作
+    operate?: {
+        chat?: boolean
+    },
     //  行为
     action?: {
+        //  间隔
+        interval?: {
+            [propName: string]: any
+        }
         //  随机走动
         randomMove?: boolean
-        //  自言自语
-        sayMyself?: boolean
-        //  说笑
-        joke?: boolean
+        //  随机说话
+        randomSay?: boolean
     }
     //  状态图片
     statusImg?: {
@@ -56,7 +58,23 @@ interface WebPetOptions {
         create?: Function;
         mounted?: Function
     }
-    [propName: string]: any
+}
+
+interface OperationRecord {
+    //  浏览器
+    navigator?: {
+        language: string
+        userAgent: string
+    },
+    //  本次会话信息
+    sessionInfo?: {
+        //  初次访问时间
+        visitTime?: string
+        //  总会话时间
+        sessionTime?: string
+        //  入口来源
+        refer?: string
+    }
 }
 
 class WebPet {
@@ -69,7 +87,7 @@ class WebPet {
     private $pet;
     //  消息外壳
     private $message;
-    //  消息内容
+    //  消息展示容器
     private $msg;
     //  菜单
     private $menu;
@@ -77,33 +95,33 @@ class WebPet {
     private $operate;
     /**
      * 状态
-     * defalut  默认
+     * default  默认
      * move     移动
      */
     private $status;
     //  脚印外壳队列
     private $pawWrapQueue: Array<any> = [];
+    //  用户操作记录
+    private $operationRecord: OperationRecord = {};
     //  默认配置
     private options: WebPetOptions = {
         name: "pet",
-        language: "mandarin",
-        character: "lazy",
         footPrint: true,
+        report: true,
         operate: {
             chat: true
         },
-        position: {
-            x: 0,
-            y: 0
-        },
         action: {
+            interval: {
+                randomMove: 35000,
+                randomSay: 30000
+            },
             randomMove: true,
-            sayMyself: true,
-            joke: true
+            randomSay: true
         },
         statusImg: {
             default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
-            hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/hover.png",
+            hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
             move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
             drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
         },
@@ -125,7 +143,7 @@ class WebPet {
             create() { },
             mounted() { }
         }
-    };
+    }
 
     /**
      * WebPet构造器
@@ -134,7 +152,7 @@ class WebPet {
     constructor(options?: WebPetOptions) {
         const that = this;
         if (!window) {
-            throw new Error("sorry, i just can play in browser.")
+            throw new Error("Sorry, I can only play in the browser.")
         };
 
         if (!window["jQuery"] || !window["$"].fn) {
@@ -148,13 +166,14 @@ class WebPet {
 
     /**
      * 创建webPet
-     * @param options 
+     * @param options WebPet配置
      */
     private create(options: WebPetOptions) {
         this.$ = window["jQuery"];
 
         options && (this.options = this.$.extend(true, {}, this.options, options));
-        this.eventEmiter("create")
+
+        this.trigger("create")
             .init()
             .checkDictionary()
             .actionEvent()
@@ -162,76 +181,61 @@ class WebPet {
     }
 
     /**
-     * 初始化WebPet容器
+     * 初始化WebPet各结构与状态
      */
     private init() {
         const $ = this.$;
-        const $container = $(tpl.container);
-        const $pet = $(tpl.pet);
-        const $message = $(tpl.message);
-        const $menu = $(tpl.menu);
-        const $operate = this.initOperate();
 
-        $container.append($pet, $message, $menu, $operate);
-
-        this.$container = $container;
-        this.$pet = this.$container.find("div.pet");
-        this.$message = this.$container.find("section.pet-message");
+        this.$container = $(tpl.container);
+        this.$pet = $(tpl.pet);
+        /**
+         * 消息窗口
+         * isOpen: 是否打开
+         * type: 当前窗口类型 default: 默认窗，confirm：确认窗
+         */
+        this.$message = $(tpl.message).data("state", {
+            isOpen: false,
+            type: "default"
+        });
         this.$msg = this.$message.find("div.pet-msg");
-        this.$menu = this.$container.find("div.pet-menu");
-        this.$operate = this.$container.find("div.pet-operate");
+        this.$menu = $(tpl.menu);
+        this.$operate = this.initOperate();
+
+        this.$container.append(this.$pet, this.$message, this.$menu, this.$operate);
         this.changeStatus("default");
 
         return this;
     }
 
-    /**
-     * 检查本地词典
-     */
+    //  检查本地词典
     private checkDictionary() {
-        const defaultDictionary: Array<object> = [
-            {
-                key: ["你好", "hello", "雷猴"],
-                value: "你好啊！"
-            }
-        ];
-        !localStorage.getItem("petDictionary") && localStorage.setItem("petDictionary", JSON.stringify(defaultDictionary));
+        !localStorage.getItem("petDictionary") && (localStorage.setItem("petDictionary", JSON.stringify(util.defaultDictionary)));
         return this;
     }
 
-    /**
-     * 生成操作区域
-     */
+    //  根据配置生成操作区域
     private initOperate() {
         const $ = this.$;
         const that = this;
         const $operate = $(tpl.operate);
-        const operateOpt = this.options.operate;
-        for (let i in operateOpt) {
-            const $btn = $(tpl[`${i}Btn`]);
-            const $content = $(tpl[`${i}Content`]);
-            const $return_btn = $(tpl.returnBtn);
-
-            that.onContentEvent($content, i);
-
-            $btn.on("click", function () {
+        for (let i in that.options.operate) {
+            const $btn = $(tpl[`${i}Btn`]).on("click", function () {
                 return that.toggleOperateContent(i);
             });
-
-            $return_btn.on("click", function () {
+            const $content = $(tpl[`${i}Content`]);
+            const $return_btn = $(tpl.returnBtn).on("click", function () {
                 return that.toggleOperateContent();
             });
+            that.onContentEvent($content, i);
 
             $operate.find("div.pet-operate-list").append($btn);
-            $operate.find("div.switch-animate").append(
-                $content.append($return_btn)
-            );
+            $operate.find("div.switch-animate").append($content.append($return_btn));
         }
         return $operate;
     }
 
     /**
-     * 监听操作区域事件
+     * 监听操作区域各功能事件
      * @param $content 
      * @param type 切换的类型
      */
@@ -240,7 +244,10 @@ class WebPet {
         if (type == "chat") {
             $content.on("keydown", function (e: KeyboardEvent) {
                 if (e.keyCode == 13) {
-                    that.initMessage(e.target["value"]);
+                    //  生成回复内容
+                    that.initAnswer(e.target["value"]);
+                    //  清空输入框内容
+                    e.target["value"] = "";
                 }
             });
         }
@@ -253,33 +260,18 @@ class WebPet {
     private toggleOperateContent(type?: string) {
         const $switch = this.$operate.find(".switch-animate");
         const $target = $switch.find(`[data-type=${type}]`);
-        const distant = -50 * $target.siblings().length;
-        if (type) {
-            $switch.css("top", `${distant}px`);
-        } else {
-            $switch.css("top", `0px`);
-        }
+        const distant = type ? -50 * $target.siblings().length : 0;
+        $switch.css("top", `${distant}px`);
     }
 
     /**
      * 根据配置，进行信息处理分发
      * @param value 用户输入的内容
      */
-    private initMessage(value: string) {
+    private initAnswer(value: string) {
         const server = this.options.server;
-        //  清空输入框内容
-        this.$operate.find(".pet-operate-content input").val("");
-        //  清空消息框内容，并隐藏
-        this.$msg.text("").hide();
-
         //  当存在服务端配置
-        if (server.answer.url) {
-            this.answerFromServer(value);
-        }
-        //  否则本地储存读取词典
-        else {
-            this.answerFromBrowser(value);
-        }
+        server.answer.url ? this.answerFromServer(value) : this.answerFromBrowser(value);
     }
 
     /**
@@ -287,16 +279,18 @@ class WebPet {
      * @param value 用户输入的内容
      */
     private answerFromServer(value) {
-        const $ = this.$;
-        const server = this.options.server;
+        const that = this;
+        const $ = that.$;
+        const server = that.options.server;
         const opt = $.extend(true, server.answer, {
             data: {
                 msg: value
             },
             success: function (result) {
                 const answerText = util.getDeepAttrValue(result, opt.dataPath, opt.separator);
-                this.messageEnd(answerText);
-            }
+                that.message(answerText);
+            },
+            error: function () { that.message("抱歉，服务出了点问题"); }
         });
         $.ajax(opt);
     }
@@ -308,152 +302,183 @@ class WebPet {
     private answerFromBrowser(value: string) {
         const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
         let answerText: string = "";
-        petDictionary.forEach(item => {
+        petDictionary[0].forEach(item => {
             if (item.key.includes(value)) {
                 answerText = item.value;
             }
         });
-        this.messageEnd(answerText || "抱歉，我不知道怎么回答。");
+        this.message(answerText || "抱歉，这个我不会。");
     }
 
     /**
-     * 将消息显示到界面上，并根据情况隐藏消息框
-     * @param answerText 回答内容
+     * 根据配置信息生成对话框
+     * param = "你好" || {
+     *  text: "你好",
+     *  btnList: [
+     *      {
+     *          type: "",   //  confirm, cancel
+     *          text: "确认",
+     *          fn: function() {
+     *          }
+     *      }
+     *  ]
+     * }
+     * @param param 文本或配置
      */
-    private messageEnd(answerText: string) {
+    private message(param: string | { [propName: string]: any }) {
+        if (!param) {
+            throw new Error("请传递配置以生成消息框");
+        }
         const that = this;
-        that.$msg.text(answerText);
-        that.$message.width() ?
-            (
-                that.$msg.fadeIn(),
-                that.msgCountDown(true)
-            ) :
-            that.$message.animate(
-                {
-                    height: 100,
-                    width: 150
-                }, {
-                    duration: 1000,
-                    complete: function () {
-                        that.$msg.fadeIn();
-                        that.msgCountDown();
-                    }
+        const $ = that.$;
+        const $msgOperate = this.$message.find(".pet-msg-operate");
+        //  消息框状态
+        const $state = that.$message.data("state");
+        //  重置文本框里的各项内容
+        (
+            that.$msg.text("").hide(),
+            $msgOperate.empty().hide()
+        )
+
+        //  初始化文本框各项内容
+        if (typeof param == "string") {
+            $state.type = "default";
+            that.$msg.text(param);
+        } else {
+            $state.type = "confirm";
+            that.$msg.text(param.text);
+            param.btnList.forEach(item => {
+                const type = item.type;
+                if (!"confirm,cancel".includes(type)) {
+                    throw new Error("type必须是confirm, cancel之一。");
                 }
-            );
+                const $msgBtn = $(tpl.msgBtn).text(item.text || (type == "confirm" ? "确认" : "取消")).on("click", function () {
+                    if (type == "cancel") {
+                        $state.isOpen = false;
+                        //  马上关闭
+                        that.closeMessage(true);
+                    }
+                    $.isFunction(item.fn) ? item.fn.call(that) : $.noop;
+                }).addClass(type);
+                $msgOperate.append($msgBtn);
+            });
+        }
+
+        let animateOpt = {};
+        const messageSize = util.countMessageSize(typeof param == "string" ? param : param.text);
+
+        //  如果已经打开，马上刷新窗口内的内容
+        if ($state.isOpen) {
+            that.$msg.fadeIn();
+            $msgOperate.fadeIn();
+            //  如果为普通模式，延迟关闭时间
+            $state.type == "default" && that.closeMessage(false, true);
+        }
+        //  否则动画打开窗口后刷新窗口后的内容
+        else {
+            $state.isOpen = true;
+            animateOpt = {
+                duration: 500,
+                complete: function () {
+                    that.$msg.fadeIn();
+                    $msgOperate.fadeIn();
+                    //  如果不为确认模式，设置自动关闭时间
+                    $state.type == "default" && that.closeMessage();
+                }
+            }
+        }
+        that.$message.animate(messageSize, animateOpt);
     }
 
     /**
      * 消息框隐藏倒计时
+     * @param now 马上关闭
      * @param extend 延长时间
      */
-    private msgCountDown(extend?: boolean) {
+    private closeMessage(now?: boolean, extend?: boolean) {
         const that = this;
         const $msg = that.$msg;
-        $msg.data("countDown", 5);
-        if (!extend) {
-            let interval = setInterval(function () {
+        const $state = that.$message.data("state");
+        //  倒计时时间，当为马上关闭时。为即刻 0
+        const time: number = 5;
+
+        if (now) {
+            that.hideMessage();
+            clearInterval($state.interval);
+            $state.interval = null;
+            return true;
+        }
+        $msg.data("countDown", time).attr("data-countDown", time);
+        //  如果没有在计时，且打开且是默认类型，需要开始倒计时
+        const shouldCountDown: boolean = !$state.interval && $state.isOpen && $state.type == "default";
+        if (!extend || shouldCountDown) {
+            $state.interval = setInterval(function () {
                 const t = $msg.data("countDown");
                 $msg.data("countDown", t - 1).attr("data-countDown", t - 1);
-                if (t === 0) {
-                    that.hideMessageBox();
-                    clearInterval(interval);
-                    interval = null;
+                if (t === 0 || $state.isOpen == false) {
+                    that.hideMessage();
+                    clearInterval($state.interval);
+                    $state.interval = null;
                 }
             }, 1000);
         }
     }
 
-    /**
-     * 隐藏消息框
-     */
-    private hideMessageBox() {
+    //  隐藏消息框
+    private hideMessage() {
+        this.$message.data("state").isOpen = false;
         this.$msg.fadeOut().text("");
-        this.$message.animate(
-            {
-                height: 0,
-                width: 0
-            },
-            {
-                duration: 1500
-            }
-        );
+        this.$message.find(".pet-msg-operate").fadeOut().empty();
+        this.$message.animate({ height: 0, width: 0 }, { duration: 500 });
     }
 
-    /**
-     * 处理动作
-     */
+    //  处理事件动作
     private actionEvent() {
         const $ = this.$;
         const that = this;
         const $container = that.$container;
         const $pet = that.$pet;
-
-        let _move: boolean = false;
+        const options = that.options;
+        const action = options.action;
+        let isMousedown: boolean = false;
         let isMove: boolean = false;
         let _x: number;
         let _y: number;
 
-        that.options.action.randomMove && (window.setInterval(function () {
-            that.randomMove();
-        }, 20000));
+        setTimeout(function () {
+            //  首次招呼
+            that.firstGreet();
+            //  随机移动
+            action.randomMove && (window.setInterval(function () {
+                that.randomMove();
+            }, action.interval.randomMove));
+            //  随机说话
+            action.randomSay && (window.setInterval(function () {
+                that.$message.data("state").type == "default" && that.initiativeSay("conversation", "random");
+            }, action.interval.randomSay));
 
-        $(document).mousemove(function (e: MouseEvent) {
-            if (_move) {
-                that.changeStatus("move");
-                const x: number = e.pageX - _x;
-                const y: number = e.pageY - _y;
-                const wx: number = $(window).width() - $container.width();
-                const dy: number = $(document).height() - $container.height();
-                if (x >= 0 && x <= wx && y > 0 && y <= dy) {
-                    const position = {
-                        top: y,
-                        left: x
-                    };
-                    $container.css(position);
-                    isMove = true;
-                }
-            }
-        }).mouseup(function () {
-            _move = false;
-        });
+        }, 5000);
 
-        $container
-            /**
-             * 鼠标经过时
-             * 1. 显示底部菜单
-             */
-            .mouseover(function (e: MouseEvent) {
-                const $target = e.target;
-                const className = $target["className"];
-                //  触摸聊天框，不会显示菜单
-                if (className !== "pet-message") {
-                    that.toggleOperateBox("show");
-                    //  睁开眼睛
+        options.report && window.addEventListener('unload', that.report, false);
+
+        $(document)
+            //  鼠标移动时
+            .mousemove(function (e: MouseEvent) {
+                if (isMousedown) {
                     that.changeStatus("move");
+                    const x: number = e.pageX - _x;
+                    const y: number = e.pageY - _y;
+                    const wx: number = $(window).width() - $container.width();
+                    const dy: number = $(document).height() - $container.height();
+                    if (x >= 0 && x <= wx && y > 0 && y <= dy) {
+                        $container.css({ top: y, left: x });
+                        isMove = true;
+                    }
                 }
             })
-            /**
-             * 鼠标离开时
-             * 1. 隐藏底部菜单
-             */
-            .mouseout(function (e: MouseEvent) {
-                const $target = e.target;
-                const nodeName = $target["nodeName"];
-                const className = $target["className"];
-                const activeEle = document.activeElement;
-                //  触摸区域为操作区域不隐藏
-                if (nodeName == "div" && className == "pet-operate") {
-
-                }
-                //  当前激活控件为聊天窗口，不隐藏
-                else if (activeEle.nodeName == "INPUT" && activeEle.className == "pet-chat") {
-
-                }
-                else {
-                    that.toggleOperateBox("hide");
-                }
-                //  如果不是在移动中，闭上眼睛
-                that.$status !== "move" && that.changeStatus("default");
+            //  鼠标松开时
+            .mouseup(function () {
+                isMousedown = false;
             });
 
         $pet
@@ -478,12 +503,46 @@ class WebPet {
                 if (e.which == 3) {
                     that.toggleMenu();
                 }
-                _move = true;
+                isMousedown = true;
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
             })
-            .bind("contextmenu", function (e: MouseEvent) {
-                return false;
+            .bind("contextmenu", function () { return false; });
+
+        $container
+            /**
+             * 鼠标经过时
+             * 1. 显示底部菜单
+             */
+            .mouseover(function (e: MouseEvent) {
+                const $target = e.target;
+                const className = $target["className"];
+                //  触摸聊天框，不会显示菜单
+                if (className !== "pet-message") {
+                    that.toggleOperate("show");
+                    //  触摸状态
+                    that.changeStatus("hover");
+                    that.$message.data("state").type == "default" && that.initiativeSay("conversation", "hover", 5);
+                }
+            })
+            /**
+             * 鼠标离开时
+             * 1. 隐藏底部菜单
+             */
+            .mouseout(function (e: MouseEvent) {
+                const $target = e.target;
+                const nodeName = $target["nodeName"];
+                const className = $target["className"];
+                const activeEle = document.activeElement;
+                //  触摸区域为操作区域不隐藏
+                if (nodeName == "div" && className == "pet-operate") { }
+                //  当前激活控件为聊天窗口，不隐藏
+                else if (activeEle.nodeName == "INPUT" && activeEle.className == "pet-chat") { }
+                else {
+                    that.toggleOperate("hide");
+                }
+                //  如果不是在移动中，闭上眼睛
+                that.$status !== "move" && that.changeStatus("default");
             });
 
         return this;
@@ -493,11 +552,12 @@ class WebPet {
      * 结束，挂载
      */
     private done() {
-        const options = this.options;
         this.$(window.document.body).append(this.$container);
-        this.eventEmiter("mounted");
-        console.info(`hello, my name is ${options.name}`);
-        return this;
+        this.trigger("mounted");
+    }
+
+    private report() {
+        navigator.sendBeacon("/log", "");
     }
 
     /**
@@ -515,26 +575,60 @@ class WebPet {
      * 事件发布函数
      * @param event 事件名称
      */
-    private eventEmiter(event: string) {
+    private trigger(event: string) {
         const on = this.options.on;
-        util.isFn(on[event]) && on[event].call(this);
+        this.$.isFunction(on[event]) && on[event].call(this);
         return this;
     }
 
+    //  首次打招呼
+    private firstGreet() {
+        const nowHour = new Date().getHours();
+        let timeSolt = "";
+        if (0 <= nowHour && nowHour <= 4) {
+            timeSolt = "midnight";
+        } else if (nowHour <= 10) {
+            timeSolt = "morning"
+        } else if (10 <= nowHour && nowHour <= 18) {
+            timeSolt = "afternoon"
+        } else if (18 <= nowHour && nowHour < 22) {
+            timeSolt = "night";
+        } else if (22 <= nowHour && nowHour <= 24) {
+            timeSolt = "latenight"
+        }
+        this.initiativeSay("greet", timeSolt);
+        this.randomMove();
+    }
+
     /**
-     * 随机移动
+     * 主动说话
+     * @param type 触发类型
+     * @param key 关键字
+     * @param percent 概率
      */
+    private initiativeSay(type: string, key: string, percent: number = 100) {
+        const defaultDictionary = util.defaultDictionary[type];
+        const afterFilter = defaultDictionary.filter(item => {
+            if (item["key"].includes(key)) {
+                return item;
+            }
+        });
+        const can = ~~(Math.random() * 100) < percent;
+        can && this.message(afterFilter[Math.floor(Math.random() * afterFilter.length)]["value"]);
+    }
+
+    //  随机移动
     private randomMove() {
         const that = this;
         const $ = that.$;
-        const orgin = that.$container.offset();
-        const target = {
-            top: 0,
-            left: 0
+        const orgin = {
+            top: that.$container[0].offsetTop,
+            left: that.$container[0].offsetLeft
         };
+        const target = { top: 0, left: 0 };
         const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
 
-        ["top", "left"].forEach((direction) => {
+        ["top", "left"].forEach((direction: string) => {
             const length: number = "top" == direction ? document.documentElement.clientHeight : document.body.offsetWidth;
             const distant: number = Math.floor(Math.random() * offset.length);
             const value: number = length / 2 * (1 + offset[distant]);
@@ -550,10 +644,13 @@ class WebPet {
             duration: 5000,
             step: function () {
                 if (pawWrap) {
-                    const nowPosition = that.$container.offset();
+                    const nowPosition = {
+                        top: that.$container[0].offsetTop,
+                        left: that.$container[0].offsetLeft
+                    }
                     const x: number = Math.abs(nowPosition.left - orgin.left);
                     const y: number = Math.abs(nowPosition.top - orgin.top);
-                    const diagonal: number = that.countDiagonal(x, y);
+                    const diagonal: number = util.countDiagonal(x, y);
                     if (diagonal - pawStart > 0) {
                         const $paw = $(tpl.paw);
                         $paw.css({
@@ -584,15 +681,6 @@ class WebPet {
     }
 
     /**
-     * 计算对角线长度
-     * @param x 
-     * @param y 
-     */
-    private countDiagonal(x: number, y: number) {
-        return Math.sqrt(x * x + y * y);
-    }
-
-    /**
      * 生成脚印路径外壳
      * @param orgin 
      * @param target 
@@ -604,7 +692,7 @@ class WebPet {
         //  外壳到达y轴坐标
         const y: number = Math.abs(target.top - orgin.top);
         //  对角线长度
-        const diagonal: number = this.countDiagonal(x, y);
+        const diagonal: number = util.countDiagonal(x, y);
         //  对角线角度
         const angle: number = Math.round((Math.asin(y / diagonal) / Math.PI * 180));
 
@@ -618,53 +706,19 @@ class WebPet {
         const $pawList = $pawWrap.find(".pet-paw-list");
         //  设置旋转角度及高度
         $pawList.css({
-            "transform": `rotate(${this.angleByQuadrant(quadrant, angle)}deg)`,
+            "transform": `rotate(${util.countAngle(quadrant, angle)}deg)`,
             "height": diagonal
         });
         //  挂载脚印外壳，并且推入脚印外壳队列
         $(window.document.body).prepend($pawWrap), this.$pawWrapQueue.push($pawWrap);
-        return {
-            x,
-            y,
-            diagonal,
-            angle,
-            $pawList
-        }
-    }
-
-    /**
-     * 根据计算旋转的角度
-     * @param quadrant 象限
-     * @param angle 角度
-     */
-    private angleByQuadrant(quadrant: number, angle: number) {
-        if (quadrant == 1) {
-            return 90 + angle;
-        }
-        if (quadrant == 2) {
-            return 270 + angle;
-        }
-        if (quadrant == 3) {
-            return 270 - angle;
-        }
-        if (quadrant == 4) {
-            return 90 - angle;
-        }
-    }
-
-    /**
-     * 更新pet的x, y轴坐标
-     * @param top 
-     */
-    private updatePosition(newPosition?: { top: number, left: number }) {
-        this.options.position = newPosition || this.$pet.offset();
+        return { x, y, diagonal, angle, $pawList };
     }
 
     /**
      * 切换显示功能栏
      * @param type 
      */
-    private toggleOperateBox(type: string = "show") {
+    private toggleOperate(type: string = "show") {
         type = type == "show" ? "fadeIn" : "fadeOut";
         this.$operate["stop"]()[type]();
         return this;

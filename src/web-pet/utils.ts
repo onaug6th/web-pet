@@ -1,15 +1,7 @@
 /**
- * 是函数吗?
- * @param fn 
- */
-const isFn: Function = function (fn: Function) {
-    return (typeof fn == "function" && fn.constructor == Function);
-}
-
-/**
  * 获取jquery依赖库
  */
-const getJquery: Function = function () {
+function getJquery() {
     return new Promise((resolve, reject) => {
         const script: HTMLScriptElement = document.createElement("script");
         script.type = "text/javascript";
@@ -21,11 +13,65 @@ const getJquery: Function = function () {
 }
 
 /**
+ * 计算消息窗口大小
+ * @param text
+ */
+function countMessageSize(text: string) {
+    const size = {
+        s: {
+            "height": 50,
+            "width": 100
+        },
+        m: {
+            "height": 70,
+            "width": 150
+        },
+        l: {
+            "height": 90,
+            "width": 250
+        }
+    }
+    const len = text.length;
+    return len < 10 ? size.s : (
+        len < 30 ? size.m : size.l
+    );
+}
+
+/**
+ * 计算对角线长度
+ * @param x 
+ * @param y 
+ */
+function countDiagonal(x: number, y: number) {
+    return Math.sqrt(x * x + y * y);
+}
+
+/**
+ * 根据计算旋转的角度
+ * @param quadrant 象限
+ * @param angle 角度
+ */
+function countAngle(quadrant: number, angle: number) {
+    if (quadrant == 1) {
+        return 90 + angle;
+    }
+    if (quadrant == 2) {
+        return 270 + angle;
+    }
+    if (quadrant == 3) {
+        return 270 - angle;
+    }
+    if (quadrant == 4) {
+        return 90 - angle;
+    }
+}
+
+/**
  * 计算位置象限，待优化
  * @param orgin 
  * @param target 
  */
-const countQuadrant: Function = function (orgin, target) {
+function countQuadrant(orgin, target) {
     const x: number = orgin.left;
     const y: number = orgin.top;
     const tx: number = target.left;
@@ -110,7 +156,7 @@ const countQuadrant: Function = function (orgin, target) {
  * @param path 属性
  * @param separator 分隔符
  */
-const getDeepAttrValue: Function = function (obj, path, separator) {
+function getDeepAttrValue(obj: object, path: string, separator: string) {
     let value: any;
     path.split(separator).forEach((item, i) => {
         i ? value = value[item] : value = obj[item];
@@ -118,9 +164,44 @@ const getDeepAttrValue: Function = function (obj, path, separator) {
     return value;
 }
 
+/**
+ * 默认词典
+ *  [
+ *      [回答],
+ *      [交流],
+ *      [招呼]
+ *  ]
+ */
+const defaultDictionary: Object = {
+    answer: [
+        { key: "你好,hello,雷猴", value: "你好" },
+        { key: "名字,你叫什么名字", value: "为什么要告诉你" }
+    ],
+    conversation: [
+        { key: "random", value: "..." },
+        { key: "random", value: "你好，人类" },
+        { key: "random", value: "-. -" },
+        { key: "random", value: "(^・ω・^ )" },
+        { key: "random", value: "今天遇到了什么有趣的事情了吗？" },
+        { key: "hover", value: "- -" },
+        { key: "hover", value: "莫挨老子" },
+        { key: "hover", value: "老是碰我干嘛" }
+    ],
+    greet: [
+        { key: "morning", value: "早上好" },
+        { key: "afternoon", value: "下午好" },
+        { key: "night", value: "晚上好" },
+        { key: "latenight", value: "很晚了，该去睡觉了" },
+        { key: "midnight", value: "去睡觉，现在，马上！" },
+    ]
+};
+
 export {
-    isFn,
     getJquery,
+    countMessageSize,
+    countDiagonal,
+    countAngle,
     countQuadrant,
-    getDeepAttrValue
+    getDeepAttrValue,
+    defaultDictionary
 }

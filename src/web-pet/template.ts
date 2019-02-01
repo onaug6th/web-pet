@@ -8,10 +8,16 @@ const container: string = `<div class="web-pet"></div>`;
     const message: string = 
         `<section class="pet-message">
             <div class="pet-msg">
-                
+            </div>
+            <div class="pet-msg-operate">
             </div>
         </section>
         `;
+
+        const msgBtn: string = 
+            `
+            <button class="msg-btn"></button>
+            `;
 
     //  菜单
     const menu: string =
@@ -76,6 +82,7 @@ export {
     container,
     pet,
     message,
+    msgBtn,
     menu,
     operate,
     returnBtn,
