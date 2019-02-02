@@ -1,6 +1,5 @@
 import * as tpl from "./template";
 import * as util from "./utils";
-import './web-pet.scss';
 
 /**
  * webPet配置模型
@@ -331,7 +330,7 @@ class WebPet {
         }
         const that = this;
         const $ = that.$;
-        const $msgOperate = this.$message.find(".pet-msg-operate");
+        const $msgOperate = that.$message.find(".pet-msg-operate");
         //  消息框状态
         const $state = that.$message.data("state");
         //  重置文本框里的各项内容
@@ -552,7 +551,7 @@ class WebPet {
      * 结束，挂载
      */
     private done() {
-        this.$(window.document.body).append(this.$container);
+        this.$(window.document.body).prepend(this.$container);
         this.trigger("mounted");
     }
 
@@ -585,16 +584,22 @@ class WebPet {
     private firstGreet() {
         const nowHour = new Date().getHours();
         let timeSolt = "";
-        if (0 <= nowHour && nowHour <= 4) {
+        if (0 <= nowHour && nowHour <= 3) {
             timeSolt = "midnight";
-        } else if (nowHour <= 10) {
+        } else if(5 <= nowHour && nowHour < 6){
+            timeSolt = "beforeSunrise";
+        } else if (6 <= nowHour && nowHour < 9) {
+            timeSolt = "earlyMorning";
+        } else if (6 <= nowHour && nowHour < 12) {
             timeSolt = "morning"
-        } else if (10 <= nowHour && nowHour <= 18) {
+        } else if (12 <= nowHour && nowHour < 18) {
             timeSolt = "afternoon"
         } else if (18 <= nowHour && nowHour < 22) {
             timeSolt = "night";
-        } else if (22 <= nowHour && nowHour <= 24) {
+        } else if (22 <= nowHour && nowHour < 24) {
             timeSolt = "latenight"
+        } else {
+            timeSolt = "common";
         }
         this.initiativeSay("greet", timeSolt);
         this.randomMove();

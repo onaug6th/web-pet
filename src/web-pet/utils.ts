@@ -175,7 +175,7 @@ function getDeepAttrValue(obj: object, path: string, separator: string) {
 const defaultDictionary: Object = {
     answer: [
         { key: "你好,hello,雷猴", value: "你好" },
-        { key: "名字,你叫什么名字", value: "为什么要告诉你" }
+        { key: "名字,你叫什么名字", value: "为什么要告诉你" },
     ],
     conversation: [
         { key: "random", value: "..." },
@@ -188,11 +188,20 @@ const defaultDictionary: Object = {
         { key: "hover", value: "老是碰我干嘛" }
     ],
     greet: [
+        { key: "common", value: "很高兴认识你" },
+        { key: "beforeSunrise", value: "天快亮了吧" },
+        { key: "earlyMorning", value: "新的一天，要开心啊" },
+        { key: "earlyMorning", value: "你也起的挺早的" },
+        { key: "earlyMorning", value: "(￣o￣) . z Z" },
         { key: "morning", value: "早上好" },
         { key: "afternoon", value: "下午好" },
+        { key: "afternoon", value: "下午就是漫长难熬" },
         { key: "night", value: "晚上好" },
+        { key: "night", value: "该动身回家了" },
         { key: "latenight", value: "很晚了，该去睡觉了" },
+        { key: "latenight", value: "(￣o￣) . z Z" },
         { key: "midnight", value: "去睡觉，现在，马上！" },
+        { key: "midnight", value: "已经很晚了，马上睡觉！" }
     ]
 };
 
