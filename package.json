@@ -11,8 +11,7 @@
   "scripts": {
     "dev": "webpack-serve webpack.config.js --open",
     "build": "webpack-cli",
-    "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register test/*",
-    "karma": "karma start karma.conf.js"
+    "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register test/*"
   },
   "author": "onaug6th",
   "license": "MIT",

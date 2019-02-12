@@ -11,6 +11,8 @@ interface WebPetOptions {
     footPrint?: boolean
     //  页面关闭时是否上报数据
     report?: boolean
+    //  上报地址
+    reportUrl?: string
     //  操作
     operate?: {
         chat?: boolean
@@ -21,6 +23,8 @@ interface WebPetOptions {
         interval?: {
             [propName: string]: any
         }
+        //  首次招呼
+        firstGreet?: boolean
         //  随机走动
         randomMove?: boolean
         //  随机说话
@@ -59,20 +63,35 @@ interface WebPetOptions {
     }
 }
 
-interface OperationRecord {
-    //  浏览器
-    navigator?: {
-        language: string
-        userAgent: string
+interface DataRecord {
+    /**
+     * 操作相关
+     * 点击最多，触摸webpet次数
+     */
+    operateInfo?: {
+        //  触摸宠物次数
+        hoverPet?: number
     },
     //  本次会话信息
     sessionInfo?: {
-        //  初次访问时间
-        visitTime?: string
+        //  语言
+        language?: string
+        //  用户设备
+        userAgent?: string
+        //  打开时间
+        startTime?: number
+        //  关闭时间
+        endTime?: number
         //  总会话时间
-        sessionTime?: string
+        sessionTime?: number
         //  入口来源
         refer?: string
+        //  白屏时间
+        firstPaintTime?: number
+        //  首屏时间
+        domReady?: number
+        //  总下载时间
+        onLoad?: number
     }
 }
 
@@ -101,12 +120,18 @@ class WebPet {
     //  脚印外壳队列
     private $pawWrapQueue: Array<any> = [];
     //  用户操作记录
-    private $operationRecord: OperationRecord = {};
+    private $dataRecord: DataRecord = {
+        operateInfo: {
+            hoverPet: 0
+        },
+        sessionInfo: {}
+    };
     //  默认配置
     private options: WebPetOptions = {
         name: "pet",
         footPrint: true,
-        report: true,
+        report: false,
+        reportUrl: "",
         operate: {
             chat: true
         },
@@ -115,6 +140,7 @@ class WebPet {
                 randomMove: 35000,
                 randomSay: 30000
             },
+            firstGreet: true,
             randomMove: true,
             randomSay: true
         },
@@ -353,7 +379,6 @@ class WebPet {
                 }
                 const $msgBtn = $(tpl.msgBtn).text(item.text || (type == "confirm" ? "确认" : "取消")).on("click", function () {
                     if (type == "cancel") {
-                        $state.isOpen = false;
                         //  马上关闭
                         that.closeMessage(true);
                     }
@@ -402,10 +427,9 @@ class WebPet {
         const time: number = 5;
 
         if (now) {
-            that.hideMessage();
             clearInterval($state.interval);
             $state.interval = null;
-            return true;
+            return that.hideMessage();
         }
         $msg.data("countDown", time).attr("data-countDown", time);
         //  如果没有在计时，且打开且是默认类型，需要开始倒计时
@@ -414,10 +438,10 @@ class WebPet {
             $state.interval = setInterval(function () {
                 const t = $msg.data("countDown");
                 $msg.data("countDown", t - 1).attr("data-countDown", t - 1);
-                if (t === 0 || $state.isOpen == false) {
-                    that.hideMessage();
+                if (t === 0) {
                     clearInterval($state.interval);
                     $state.interval = null;
+                    $state.type == "default" && that.hideMessage();
                 }
             }, 1000);
         }
@@ -429,6 +453,30 @@ class WebPet {
         this.$msg.fadeOut().text("");
         this.$message.find(".pet-msg-operate").fadeOut().empty();
         this.$message.animate({ height: 0, width: 0 }, { duration: 500 });
+    }
+
+    /**
+     * 收集设备信息和性能信息
+     */
+    private recordData() {
+        const timing = window.performance.timing;
+        const navigator = window.navigator
+        const sessionInfo = this.$dataRecord.sessionInfo;
+
+        //  语言
+        sessionInfo.language = navigator.language;
+        //  用户设备
+        sessionInfo.userAgent = navigator.userAgent;
+        //  初始访问时间
+        sessionInfo.startTime = timing.navigationStart;
+        //  页面来源
+        sessionInfo.refer = document.location.href;
+        //  页面准备时间
+        sessionInfo.domReady = timing.domInteractive - timing.navigationStart;
+        //  总下载时间
+        sessionInfo.onLoad = timing.loadEventStart - timing.navigationStart;
+
+        return this;
     }
 
     //  处理事件动作
@@ -445,20 +493,25 @@ class WebPet {
         let _y: number;
 
         setTimeout(function () {
-            //  首次招呼
-            that.firstGreet();
+            //  五秒后首次招呼
+            action.firstGreet && that.firstGreet();
             //  随机移动
             action.randomMove && (window.setInterval(function () {
                 that.randomMove();
             }, action.interval.randomMove));
             //  随机说话
             action.randomSay && (window.setInterval(function () {
-                that.$message.data("state").type == "default" && that.initiativeSay("conversation", "random");
+                that.initiativeSay("conversation", "random");
             }, action.interval.randomSay));
 
         }, 5000);
 
-        options.report && window.addEventListener('unload', that.report, false);
+        options.report && window.addEventListener('load', function () {
+            that.recordData();
+            (!window["webPetOnReport"]) && (window["webPetOnReport"] = true, window.addEventListener('unload', function () {
+                return that.report.call(that)
+            }, false));
+        });
 
         $(document)
             //  鼠标移动时
@@ -506,22 +559,27 @@ class WebPet {
                 _x = e.pageX - parseInt($container.css("left"));
                 _y = e.pageY - parseInt($container.css("top"));
             })
-            .bind("contextmenu", function () { return false; });
+            .bind("contextmenu", function () { return false; })
+            .mouseover(function () {
+                that.$dataRecord.operateInfo.hoverPet++;
+            });
 
         $container
             /**
-             * 鼠标经过时
+             * 鼠标经过时容器时
              * 1. 显示底部菜单
              */
             .mouseover(function (e: MouseEvent) {
                 const $target = e.target;
                 const className = $target["className"];
-                //  触摸聊天框，不会显示菜单
-                if (className !== "pet-message") {
+                const mouseInMsgBox = className == "pet-message" || $($target).parents(".pet-message").length;
+
+                //  触摸信息框，不会显示菜单
+                if (!mouseInMsgBox) {
                     that.toggleOperate("show");
                     //  触摸状态
                     that.changeStatus("hover");
-                    that.$message.data("state").type == "default" && that.initiativeSay("conversation", "hover", 5);
+                    that.initiativeSay("conversation", "hover", 5);
                 }
             })
             /**
@@ -556,7 +614,11 @@ class WebPet {
     }
 
     private report() {
-        navigator.sendBeacon("/log", "");
+        const sessionInfo = this.$dataRecord.sessionInfo;
+        sessionInfo.endTime = new Date().getTime();
+        sessionInfo.sessionTime = sessionInfo.startTime - sessionInfo.endTime;
+
+        navigator.sendBeacon(this.options.reportUrl + `?data=${JSON.stringify(this.$dataRecord)}`, "");
     }
 
     /**
@@ -586,7 +648,7 @@ class WebPet {
         let timeSolt = "";
         if (0 <= nowHour && nowHour <= 3) {
             timeSolt = "midnight";
-        } else if(5 <= nowHour && nowHour < 6){
+        } else if (5 <= nowHour && nowHour < 6) {
             timeSolt = "beforeSunrise";
         } else if (6 <= nowHour && nowHour < 9) {
             timeSolt = "earlyMorning";
@@ -597,7 +659,7 @@ class WebPet {
         } else if (18 <= nowHour && nowHour < 22) {
             timeSolt = "night";
         } else if (22 <= nowHour && nowHour < 24) {
-            timeSolt = "latenight"
+            timeSolt = "latenight";
         } else {
             timeSolt = "common";
         }
@@ -612,14 +674,16 @@ class WebPet {
      * @param percent 概率
      */
     private initiativeSay(type: string, key: string, percent: number = 100) {
-        const defaultDictionary = util.defaultDictionary[type];
-        const afterFilter = defaultDictionary.filter(item => {
-            if (item["key"].includes(key)) {
-                return item;
-            }
-        });
-        const can = ~~(Math.random() * 100) < percent;
-        can && this.message(afterFilter[Math.floor(Math.random() * afterFilter.length)]["value"]);
+        if (this.$message.data("state").type == "default") {
+            const defaultDictionary = util.defaultDictionary[type];
+            const afterFilter = defaultDictionary.filter(item => {
+                if (item["key"].split(",").includes(key)) {
+                    return item;
+                }
+            });
+            const can = ~~(Math.random() * 100) < percent;
+            can && this.message(afterFilter[Math.floor(Math.random() * afterFilter.length)]["value"]);
+        }
     }
 
     //  随机移动

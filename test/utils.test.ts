@@ -3,9 +3,9 @@ import { expect } from 'chai';
 
 describe('工具类测试套件', function () {
 
-    // it(`应当能够下载Jquery`, function () {
+    // it(`应当能够下载Jquery`, function (done) {
     //     util.getJquery().then(result => {
-    //         expect(result).to.equal(true);
+    //         done();
     //     });
     // });
 
