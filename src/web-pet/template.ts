@@ -23,7 +23,7 @@ const container: string = `<div class="web-pet"></div>`;
     const menu: string =
         `<div class="pet-menu">
             <ul>
-                <li>聊天</li>
+                <li data-fn="chat">聊天</li>
             </ul>
         </div>`;
 
@@ -42,7 +42,7 @@ const container: string = `<div class="web-pet"></div>`;
         //  操作区域-聊天按钮
         const chatBtn: string =
             `<a>
-                <img class="emoji" alt="chat" height="20" width="20" src="https://assets-cdn.github.com/images/icons/emoji/speech_balloon.png">
+                <img class="emoji" alt="chat" height="20" width="20" src="https://github.githubassets.com/images/icons/emoji/speech_balloon.png">
             </a>`;
 
         //  操作区域-聊天区域
@@ -52,7 +52,7 @@ const container: string = `<div class="web-pet"></div>`;
             </div>`;
 
 //  爪子列表
-const pawList: string =
+const pawWrap: string =
     `<div class="pet-paw-warp">
         <svg>
             <symbol id="pet-paw-svg" viewBox="0 0 249 209.32">
@@ -88,6 +88,6 @@ export {
     returnBtn,
     chatBtn,
     chatContent,
-    pawList,
+    pawWrap,
     paw
 }

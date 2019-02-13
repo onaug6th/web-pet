@@ -1,5 +1,5 @@
 import * as tpl from "./template";
-import * as util from "./utils";
+import * as utils from "./utils";
 
 /**
  * webPet配置模型
@@ -13,10 +13,12 @@ interface WebPetOptions {
     report?: boolean
     //  上报地址
     reportUrl?: string
+    //  首次出现位置
+    firstPosition?: string | object
     //  操作
     operate?: {
         chat?: boolean
-    },
+    }
     //  行为
     action?: {
         //  间隔
@@ -38,32 +40,33 @@ interface WebPetOptions {
         hover?: string
         //  移动
         move?: string
-        //  拖动
-        drop?: string
     }
     //  服务端配置
     server?: {
         //  回答时的配置
         answer?: {
-            url: string,
-            dataPath?: string,
+            url: string
+            dataPath?: string
             [propName: string]: any
         }
         //  学习时的配置
         learn?: {
-            url: string,
-            dataPath?: string,
+            url: string
+            dataPath?: string
             [propName: string]: any
         }
     }
     //  事件
     on?: {
-        create?: Function;
+        create?: Function
         mounted?: Function
     }
 }
 
-interface DataRecord {
+/**
+ * 分析数据模型
+ */
+interface analyticsData {
     /**
      * 操作相关
      * 点击最多，触摸webpet次数
@@ -71,7 +74,7 @@ interface DataRecord {
     operateInfo?: {
         //  触摸宠物次数
         hoverPet?: number
-    },
+    }
     //  本次会话信息
     sessionInfo?: {
         //  语言
@@ -119,8 +122,8 @@ class WebPet {
     private $status;
     //  脚印外壳队列
     private $pawWrapQueue: Array<any> = [];
-    //  用户操作记录
-    private $dataRecord: DataRecord = {
+    //  分析数据
+    private $analyticsData: analyticsData = {
         operateInfo: {
             hoverPet: 0
         },
@@ -132,6 +135,7 @@ class WebPet {
         footPrint: true,
         report: false,
         reportUrl: "",
+        firstPosition: "rightLower",
         operate: {
             chat: true
         },
@@ -147,8 +151,7 @@ class WebPet {
         statusImg: {
             default: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png",
             hover: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
-            move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/move.png",
-            drop: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/drop.png"
+            move: "https://web-pet-1253668581.cos.ap-chengdu.myqcloud.com/default.png"
         },
         server: {
             answer: {
@@ -159,9 +162,7 @@ class WebPet {
             },
             learn: {
                 url: "",
-                method: "POST",
-                dataPath: "data",
-                separator: "."
+                method: "POST"
             }
         },
         on: {
@@ -181,7 +182,7 @@ class WebPet {
         };
 
         if (!window["jQuery"] || !window["$"].fn) {
-            util.getJquery().then(() => {
+            utils.getJquery().then(() => {
                 that.create(options);
             });
         } else {
@@ -223,7 +224,9 @@ class WebPet {
             type: "default"
         });
         this.$msg = this.$message.find("div.pet-msg");
-        this.$menu = $(tpl.menu);
+        this.$menu = $(tpl.menu).on("click", (e: MouseEvent) => {
+            this[$(e.target).data("fn")]().toggleMenu("fadeOut");
+        });
         this.$operate = this.initOperate();
 
         this.$container.append(this.$pet, this.$message, this.$menu, this.$operate);
@@ -232,9 +235,14 @@ class WebPet {
         return this;
     }
 
+    private chat(){
+        this.toggleOperateContent("chat");
+        return this;
+    }
+
     //  检查本地词典
     private checkDictionary() {
-        !localStorage.getItem("petDictionary") && (localStorage.setItem("petDictionary", JSON.stringify(util.defaultDictionary)));
+        !localStorage.getItem("petDictionary") && (localStorage.setItem("petDictionary", JSON.stringify(utils.defaultDictionary)));
         return this;
     }
 
@@ -308,11 +316,9 @@ class WebPet {
         const $ = that.$;
         const server = that.options.server;
         const opt = $.extend(true, server.answer, {
-            data: {
-                msg: value
-            },
+            data: { msg: value },
             success: function (result) {
-                const answerText = util.getDeepAttrValue(result, opt.dataPath, opt.separator);
+                const answerText = utils.getDeepAttrValue(result, opt.dataPath, opt.separator);
                 that.message(answerText);
             },
             error: function () { that.message("抱歉，服务出了点问题"); }
@@ -327,7 +333,7 @@ class WebPet {
     private answerFromBrowser(value: string) {
         const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
         let answerText: string = "";
-        petDictionary[0].forEach(item => {
+        petDictionary["answer"].forEach(item => {
             if (item.key.includes(value)) {
                 answerText = item.value;
             }
@@ -389,7 +395,7 @@ class WebPet {
         }
 
         let animateOpt = {};
-        const messageSize = util.countMessageSize(typeof param == "string" ? param : param.text);
+        const messageSize = utils.countMessageSize(typeof param == "string" ? param : param.text);
 
         //  如果已经打开，马上刷新窗口内的内容
         if ($state.isOpen) {
@@ -411,7 +417,7 @@ class WebPet {
                 }
             }
         }
-        that.$message.animate(messageSize, animateOpt);
+        that.$message.stop().animate(messageSize, animateOpt);
     }
 
     /**
@@ -423,7 +429,6 @@ class WebPet {
         const that = this;
         const $msg = that.$msg;
         const $state = that.$message.data("state");
-        //  倒计时时间，当为马上关闭时。为即刻 0
         const time: number = 5;
 
         if (now) {
@@ -461,7 +466,7 @@ class WebPet {
     private recordData() {
         const timing = window.performance.timing;
         const navigator = window.navigator
-        const sessionInfo = this.$dataRecord.sessionInfo;
+        const sessionInfo = this.$analyticsData.sessionInfo;
 
         //  语言
         sessionInfo.language = navigator.language;
@@ -494,14 +499,14 @@ class WebPet {
 
         setTimeout(function () {
             //  五秒后首次招呼
-            action.firstGreet && that.firstGreet();
-            //  随机移动
+            action.firstGreet && that.$status != "hide" && that.firstGreet();
+            //  设置随机移动倒计时
             action.randomMove && (window.setInterval(function () {
-                that.randomMove();
+                that.$status != "hide" && that.randomMove();
             }, action.interval.randomMove));
-            //  随机说话
+            //  设置随机说话倒计时
             action.randomSay && (window.setInterval(function () {
-                that.initiativeSay("conversation", "random");
+                that.$status != "hide" && that.randomSay();
             }, action.interval.randomSay));
 
         }, 5000);
@@ -509,7 +514,7 @@ class WebPet {
         options.report && window.addEventListener('load', function () {
             that.recordData();
             (!window["webPetOnReport"]) && (window["webPetOnReport"] = true, window.addEventListener('unload', function () {
-                return that.report.call(that)
+                return that.report.call(that);
             }, false));
         });
 
@@ -561,7 +566,8 @@ class WebPet {
             })
             .bind("contextmenu", function () { return false; })
             .mouseover(function () {
-                that.$dataRecord.operateInfo.hoverPet++;
+                that.$analyticsData.operateInfo.hoverPet++;
+                that.initiativeSay("conversation", "hover", 5);
             });
 
         $container
@@ -579,7 +585,6 @@ class WebPet {
                     that.toggleOperate("show");
                     //  触摸状态
                     that.changeStatus("hover");
-                    that.initiativeSay("conversation", "hover", 5);
                 }
             })
             /**
@@ -610,15 +615,49 @@ class WebPet {
      */
     private done() {
         this.$(window.document.body).prepend(this.$container);
+        this.countFirstPosition();
         this.trigger("mounted");
     }
 
+    /**
+     * 计算首次出现位置
+     */
+    private countFirstPosition() {
+        const w: number = document.body.offsetWidth;
+        const h: number = document.documentElement.clientHeight;
+        const firstPosition: string | object = this.options.firstPosition;
+        const position = {
+            top: { left: w / 2 - 150, top: 0 },
+            rightUpper: { left: w - 150, top: 0 },
+            right: { left: w - 150, top: h / 2 - 150 },
+            rightLower: { left: w - 150, top: h - 150 },
+            bottom: { left: w / 2 - 150, top: h - 150 },
+            leftLower: { left: 0, top: h - 150 },
+            left: { left: 0, top: h / 2 - 150 },
+            leftUpper: { left: 0, top: 0 }
+        }
+        this.$container.css(typeof firstPosition == "object" ? firstPosition : position[firstPosition]);
+    }
+
+    /**
+     * 上报已收集的数据
+     */
     private report() {
-        const sessionInfo = this.$dataRecord.sessionInfo;
+        const sessionInfo = this.$analyticsData.sessionInfo;
         sessionInfo.endTime = new Date().getTime();
         sessionInfo.sessionTime = sessionInfo.startTime - sessionInfo.endTime;
 
-        navigator.sendBeacon(this.options.reportUrl + `?data=${JSON.stringify(this.$dataRecord)}`, "");
+        const params = JSON.stringify(this.$analyticsData);
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(this.options.reportUrl, params);
+        } else {
+            this.$.ajax({
+                url: this.options.reportUrl,
+                method: "POST",
+                contentType: "application/json",
+                data: params
+            });
+        }
     }
 
     /**
@@ -626,9 +665,9 @@ class WebPet {
      * @param status 状态名称
      */
     private changeStatus(status: string) {
-        const $pet = this.$pet;
+        const img = this.options.statusImg[status] || this.options.statusImg["default"];
         this.$status = status;
-        $pet.attr("style", `background-image: url(${this.options.statusImg[status]})`);
+        this.$pet.attr("style", `background-image: url(${img})`);
         return this;
     }
 
@@ -664,40 +703,51 @@ class WebPet {
             timeSolt = "common";
         }
         this.initiativeSay("greet", timeSolt);
-        this.randomMove();
     }
 
     /**
-     * 主动说话
+     * 随机说话
+     */
+    private randomSay() {
+        this.initiativeSay("conversation", "random");
+    }
+
+    /**
+     * 根据类型和关键字，取词说话
      * @param type 触发类型
      * @param key 关键字
      * @param percent 概率
      */
     private initiativeSay(type: string, key: string, percent: number = 100) {
         if (this.$message.data("state").type == "default") {
-            const defaultDictionary = util.defaultDictionary[type];
+            const defaultDictionary = utils.defaultDictionary[type];
             const afterFilter = defaultDictionary.filter(item => {
                 if (item["key"].split(",").includes(key)) {
                     return item;
                 }
             });
-            const can = ~~(Math.random() * 100) < percent;
+            const can: boolean = ~~(Math.random() * 100) < percent;
             can && this.message(afterFilter[Math.floor(Math.random() * afterFilter.length)]["value"]);
         }
     }
 
-    //  随机移动
-    private randomMove() {
+    /**
+     * 随机移动
+     * @param position 移动的目标位置
+     * @param speed 移动速度
+     * @param callback 回调
+     */
+    private randomMove(position?, speed?: number, callback?: Function) {
         const that = this;
         const $ = that.$;
         const orgin = {
             top: that.$container[0].offsetTop,
             left: that.$container[0].offsetLeft
         };
-        const target = { top: 0, left: 0 };
+        const target = position || { top: 0, left: 0 };
         const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
 
-        ["top", "left"].forEach((direction: string) => {
+        !position && ["top", "left"].forEach((direction: string) => {
             const length: number = "top" == direction ? document.documentElement.clientHeight : document.body.offsetWidth;
             const distant: number = Math.floor(Math.random() * offset.length);
             const value: number = length / 2 * (1 + offset[distant]);
@@ -710,7 +760,7 @@ class WebPet {
         that.options.footPrint && (pawWrap = that.initPawWrap(orgin, target));
         that.changeStatus("move");
         that.$container.stop().animate(target, {
-            duration: 5000,
+            duration: speed || 5000,
             step: function () {
                 if (pawWrap) {
                     const nowPosition = {
@@ -719,7 +769,7 @@ class WebPet {
                     }
                     const x: number = Math.abs(nowPosition.left - orgin.left);
                     const y: number = Math.abs(nowPosition.top - orgin.top);
-                    const diagonal: number = util.countDiagonal(x, y);
+                    const diagonal: number = utils.countDiagonal(x, y);
                     if (diagonal - pawStart > 0) {
                         const $paw = $(tpl.paw);
                         $paw.css({
@@ -734,6 +784,7 @@ class WebPet {
                 pawStart = null;
                 that.changeStatus("default");
                 that.cleanPawWrap();
+                $.isFunction(callback) && callback();
             }
         });
         return that;
@@ -761,21 +812,21 @@ class WebPet {
         //  外壳到达y轴坐标
         const y: number = Math.abs(target.top - orgin.top);
         //  对角线长度
-        const diagonal: number = util.countDiagonal(x, y);
+        const diagonal: number = utils.countDiagonal(x, y);
         //  对角线角度
         const angle: number = Math.round((Math.asin(y / diagonal) / Math.PI * 180));
 
         //  脚印外壳
-        const $pawWrap = $(tpl.pawList);
+        const $pawWrap = $(tpl.pawWrap);
         //  设置基础位置
         $pawWrap.css(orgin);
         //  目标位置象限
-        const quadrant: number = util.countQuadrant(orgin, target);
+        const quadrant: number = utils.countQuadrant(orgin, target);
         //  脚印列表
         const $pawList = $pawWrap.find(".pet-paw-list");
         //  设置旋转角度及高度
         $pawList.css({
-            "transform": `rotate(${util.countAngle(quadrant, angle)}deg)`,
+            "transform": `rotate(${utils.countAngle(quadrant, angle)}deg)`,
             "height": diagonal
         });
         //  挂载脚印外壳，并且推入脚印外壳队列
@@ -801,6 +852,57 @@ class WebPet {
         type = type ? type == "show" ? "fadeIn" : "fadeOut" : "fadeToggle";
         this.$menu["stop"]()[type]();
         return this;
+    }
+
+    /**
+     * 显示webpet
+     * @param now 马上
+     */
+    private show(now?: boolean) {
+        const that = this;
+        const position = {
+            left: document.body.offsetWidth - 150,
+            top: document.documentElement.clientHeight - 150
+        };
+        if (that.$status == "hide") {
+            if (now) {
+                this.$container.css(position);
+                that.changeStatus("default");
+            } else {
+                that.message("你好");
+                that.randomMove(position, 1000, function () {
+                    that.changeStatus("default");
+                });
+            }
+        } else {
+            console.info("目标不在隐藏状态");
+        }
+    }
+
+    /**
+     * 隐藏webpet
+     * @param now 马上
+     */
+    private hide(now?: boolean) {
+        const that = this;
+        const position = {
+            left: document.body.offsetWidth,
+            top: document.documentElement.clientHeight - 150
+        };
+        if (that.$status == "hide") {
+            console.info("目标已经隐藏了");
+        } else {
+            if (now) {
+                this.$container.css(position);
+                that.changeStatus("hide");
+            } else {
+                that.message("再见");
+                that.randomMove(position, 1000, function () {
+                    that.closeMessage(true);
+                    that.changeStatus("hide");
+                });
+            }
+        }
     }
 
 }

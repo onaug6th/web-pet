@@ -2,34 +2,34 @@
 
 [![npm (scoped)](https://img.shields.io/npm/v/web-pet.svg)](https://www.npmjs.com/package/web-pet)
 
-在页面上打瞌睡的一只小猫咪，负责陪伴和引导用户。记录用户行为和设备页面性能信息，并上报每次的统计信息。
+A cat dozing on the page is responsible for accompanying and guiding users. Record user behavior and device page performance information, and report each statistical information.
 
-简体中文 | [English](./README-EN.md)
+English | [简体中文](./README.md)
 
-## 启动
+## Install
 ```
 npm run dev
 ```
 
-## 构建生产
+## Build
 ```
 npm run build
 ```
 
-## 安装
+## Usage
 
-使用 npm:
+Using npm:
 
 ```bash
 npm install web-pet
 ```
 
-使用script标签:
+Using script:
 
 ```html
 <script src="/dist/webPet.min.js"></script>
 ```
-## 例子
+## Example
 
 ```js
 import WebPet from "web-pet";
@@ -43,8 +43,8 @@ const opt = {
 const otherPet = new WebPet(opt);
 ```
 
-## WebPet 配置
-你可以个性化配置生成自定义属性的宠物。
+## WebPet Options
+You can personalize the configuration to generate custom attributes for pets.
 ```js
 {
   name: '二狗',

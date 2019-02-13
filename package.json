@@ -1,6 +1,6 @@
 {
   "name": "web-pet",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "a pet for you webpage",
   "repository": "https://github.com/onaug6th/web-pet",
   "main": "dist/webPet.min.js",
@@ -13,6 +13,7 @@
     "build": "webpack-cli",
     "test": "./node_modules/.bin/mocha -r ./node_modules/ts-node/register test/*"
   },
+  "readmeFilename": "README.md",
   "author": "onaug6th",
   "license": "MIT",
   "devDependencies": {

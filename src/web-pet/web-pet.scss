@@ -7,9 +7,9 @@ div.web-pet{
     display: block;
     width: 100px;
     height: 100px;
-    position: fixed;
-    left: 160px;
-    top: 160px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
     z-index: 9999;
 
     //  本体
@@ -191,10 +191,14 @@ div.web-pet{
     display: block;
     width: 100px;
     height: 100px;
-    position: fixed;
+    position: absolute;
     left: 160px;
     top: 0px;
     z-index: 9998;
+
+    & > svg{
+        display: none;
+    }
 
     .pet-paw-list {
         position: absolute;
@@ -206,9 +210,6 @@ div.web-pet{
         font-size: 50px;
         color: rgb(53, 152, 220);
     
-        & > svg{
-            display: none;
-        }
  
         .pet-paw {
             width: 20px;

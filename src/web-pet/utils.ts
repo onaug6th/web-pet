@@ -47,7 +47,7 @@ function countDiagonal(x: number, y: number) {
 }
 
 /**
- * 根据计算旋转的角度
+ * 根据象限计算旋转的角度
  * @param quadrant 象限
  * @param angle 角度
  */
