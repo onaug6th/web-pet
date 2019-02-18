@@ -235,7 +235,8 @@ class WebPet {
         return this;
     }
 
-    private chat(){
+    //  右键菜单时的回调函数
+    private chat() {
         this.toggleOperateContent("chat");
         return this;
     }
@@ -645,7 +646,7 @@ class WebPet {
     private report() {
         const sessionInfo = this.$analyticsData.sessionInfo;
         sessionInfo.endTime = new Date().getTime();
-        sessionInfo.sessionTime = sessionInfo.startTime - sessionInfo.endTime;
+        sessionInfo.sessionTime = sessionInfo.endTime - sessionInfo.startTime;
 
         const params = JSON.stringify(this.$analyticsData);
         if (navigator.sendBeacon) {
@@ -748,7 +749,7 @@ class WebPet {
         const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
 
         !position && ["top", "left"].forEach((direction: string) => {
-            const length: number = "top" == direction ? document.documentElement.clientHeight : document.body.offsetWidth;
+            const length: number = "top" == direction ? document.body.offsetHeight : document.body.offsetWidth;
             const distant: number = Math.floor(Math.random() * offset.length);
             const value: number = length / 2 * (1 + offset[distant]);
             target[direction] = value;
@@ -856,24 +857,13 @@ class WebPet {
 
     /**
      * 显示webpet
-     * @param now 马上
      */
-    private show(now?: boolean) {
+    private show() {
         const that = this;
-        const position = {
-            left: document.body.offsetWidth - 150,
-            top: document.documentElement.clientHeight - 150
-        };
         if (that.$status == "hide") {
-            if (now) {
-                this.$container.css(position);
-                that.changeStatus("default");
-            } else {
-                that.message("你好");
-                that.randomMove(position, 1000, function () {
-                    that.changeStatus("default");
-                });
-            }
+            that.message("你好");
+            that.$container.fadeIn();
+            that.changeStatus("default");
         } else {
             console.info("目标不在隐藏状态");
         }
@@ -882,25 +872,23 @@ class WebPet {
     /**
      * 隐藏webpet
      * @param now 马上
+     * @param position 隐藏的位置
      */
     private hide(now?: boolean) {
         const that = this;
-        const position = {
-            left: document.body.offsetWidth,
-            top: document.documentElement.clientHeight - 150
-        };
         if (that.$status == "hide") {
             console.info("目标已经隐藏了");
         } else {
             if (now) {
-                this.$container.css(position);
+                that.$container.fadeOut();
                 that.changeStatus("hide");
             } else {
                 that.message("再见");
-                that.randomMove(position, 1000, function () {
+                setTimeout(() => {
+                    that.$container.fadeOut();
                     that.closeMessage(true);
                     that.changeStatus("hide");
-                });
+                }, 3000);
             }
         }
     }
