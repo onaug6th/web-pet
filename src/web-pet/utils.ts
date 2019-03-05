@@ -53,7 +53,7 @@ function countDiagonal(x: number, y: number) {
  */
 function countAngle(quadrant: number, angle: number) {
     if (quadrant == 1) {
-        return 90 + angle;
+        return 90 - angle;
     }
     if (quadrant == 2) {
         return 270 + angle;
@@ -62,92 +62,27 @@ function countAngle(quadrant: number, angle: number) {
         return 270 - angle;
     }
     if (quadrant == 4) {
-        return 90 - angle;
+        return 90 + angle;
     }
 }
 
 /**
- * 计算位置象限，待优化
+ * 基于页面左上角的坐标，计算位置象限
  * @param orgin 
  * @param target 
  */
 function countQuadrant(orgin, target) {
-    const x: number = orgin.left;
-    const y: number = orgin.top;
-    const tx: number = target.left;
-    const ty: number = target.top;
+    const x: string = target.left - orgin.left > 0 ? "1" : "0";
+    const y: string = target.top - orgin.top > 0 ? "1" : "0";
 
-    //  1, 4
-    if (tx > x) {
-        //  1
-        if (ty > y) {
-            return 1;
-        }
-        //  4
-        if (ty < y) {
-            return 4;
-        }
-    }
-    //  2, 3
-    if (tx < x) {
-        //  2
-        if (ty < y) {
-            return 2;
-        }
-        //  3
-        if (ty > y) {
-            return 3;
-        }
-    }
-    if (ty == y) {
-        //  1, 2
-        if (ty > 0) {
-            //  1
-            if (tx > x) {
-                return 1;
-            }
-            //  2
-            if (tx < x) {
-                return 2;
-            }
-        }
-        //  3, 4
-        if (ty < 0) {
-            //  4
-            if (tx > x) {
-                return 4;
-            }
-            //  3
-            if (tx < x) {
-                return 3;
-            }
-        }
-    }
-    if (tx == x) {
-        //  1, 4
-        if (tx > 0) {
-            //  1
-            if (ty > y) {
-                return 1;
-            }
-            //  4
-            if (ty < y) {
-                return 4;
-            }
-        }
-        //  2, 3
-        if (tx < 0) {
-            //  2
-            if (ty > y) {
-                return 2;
-            }
-            //  3
-            if (ty < y) {
-                return 3;
-            }
-        }
-    }
-    return 4;
+    const quadrant = {
+        "11": 4,
+        "01": 3,
+        "00": 2,
+        "10": 1
+    };
+
+    return quadrant[x + y];
 }
 
 /**

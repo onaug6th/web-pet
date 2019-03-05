@@ -181,7 +181,7 @@ class WebPet {
             throw new Error("Sorry, I can only play in the browser.")
         };
 
-        if (!window["jQuery"] || !window["$"].fn) {
+        if (!window["$"] || !window["$"].fn) {
             utils.getJquery().then(() => {
                 that.create(options);
             });
@@ -195,7 +195,7 @@ class WebPet {
      * @param options WebPet配置
      */
     private create(options: WebPetOptions) {
-        this.$ = window["jQuery"];
+        this.$ = window["$"];
 
         options && (this.options = this.$.extend(true, {}, this.options, options));
 
