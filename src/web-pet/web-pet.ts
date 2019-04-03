@@ -558,6 +558,7 @@ class WebPet {
              * 2. 拖动位置
              */
             .mousedown(function (e: MouseEvent) {
+                that.stopMove();
                 if (e.which == 3) {
                     that.toggleMenu();
                 }
@@ -732,6 +733,13 @@ class WebPet {
         }
     }
 
+    //  停止移动
+    private stopMove() {
+        this.$pet.removeClass("moving");
+        this.$container.stop();
+        return this;
+    }
+
     /**
      * 随机移动
      * @param position 移动的目标位置
@@ -760,7 +768,8 @@ class WebPet {
 
         that.options.footPrint && (pawWrap = that.initPawWrap(orgin, target));
         that.changeStatus("move");
-        that.$container.stop().animate(target, {
+        that.$pet.addClass("moving");
+        that.$container.animate(target, {
             duration: speed || 5000,
             step: function () {
                 if (pawWrap) {
@@ -785,6 +794,7 @@ class WebPet {
                 pawStart = null;
                 that.changeStatus("default");
                 that.cleanPawWrap();
+                that.stopMove();
                 $.isFunction(callback) && callback();
             }
         });
