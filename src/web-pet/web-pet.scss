@@ -19,6 +19,27 @@ div.web-pet{
         background-repeat: no-repeat;
         background-size: 100%;
         cursor: move;
+
+        &.moving {
+            animation-name: moving;
+            animation-duration: 1.5s;
+            animation-iteration-count: infinite;
+            transition-timing-function: ease;
+            transform-origin: bottom center;
+            will-change: transform;
+        }
+
+        @keyframes moving {
+            0% {
+                transform: scale(1.05);
+            }
+            50% {
+                transform: scale(.95);
+            }
+            100% {
+                transform: scale(1.05);
+            }
+        }
     }
 
     //  消息
