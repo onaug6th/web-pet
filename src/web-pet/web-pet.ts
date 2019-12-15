@@ -235,7 +235,7 @@ class WebPet {
         return this;
     }
 
-    private chat(){
+    private chat() {
         this.toggleOperateContent("chat");
         return this;
     }
@@ -333,11 +333,15 @@ class WebPet {
     private answerFromBrowser(value: string) {
         const petDictionary: Array<any> = JSON.parse(localStorage.getItem("petDictionary"));
         let answerText: string = "";
-        petDictionary["answer"].forEach(item => {
-            if (item.key.includes(value)) {
-                answerText = item.value;
-            }
-        });
+        try {
+            petDictionary["answer"].forEach(item => {
+                if (item.key.includes(value)) {
+                    answerText = item.value;
+                }
+            });
+        } catch (e) {
+            console.info("词典上似乎不存在answer分类。");
+        }
         this.message(answerText || "抱歉，这个我不会。");
     }
 
@@ -748,7 +752,7 @@ class WebPet {
         const offset: Array<number> = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, -0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.75];
 
         !position && ["top", "left"].forEach((direction: string) => {
-            const length: number = "top" == direction ? document.documentElement.clientHeight : document.body.offsetWidth;
+            const length: number = "top" == direction ? document.body.clientHeight : document.body.offsetWidth;
             const distant: number = Math.floor(Math.random() * offset.length);
             const value: number = length / 2 * (1 + offset[distant]);
             target[direction] = value;
