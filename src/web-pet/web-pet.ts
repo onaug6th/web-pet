@@ -58,7 +58,7 @@ interface WebPetOptions {
     }
     //  事件
     on?: {
-        create?: Function
+        created?: Function
         mounted?: Function
     }
 }
@@ -166,7 +166,7 @@ class WebPet {
             }
         },
         on: {
-            create() { },
+            created() { },
             mounted() { }
         }
     }
@@ -199,7 +199,7 @@ class WebPet {
 
         options && (this.options = this.$.extend(true, {}, this.options, options));
 
-        this.trigger("create")
+        this.trigger("created")
             .init()
             .checkDictionary()
             .actionEvent()
@@ -518,9 +518,12 @@ class WebPet {
 
         options.report && window.addEventListener('load', function () {
             that.recordData();
-            (!window["webPetOnReport"]) && (window["webPetOnReport"] = true, window.addEventListener('unload', function () {
-                return that.report.call(that);
-            }, false));
+            if(!window["webPetOnReport"]) {
+                window["webPetOnReport"] = true;
+                window.addEventListener('unload', function () {
+                    return that.report.call(that);
+                }, false);
+            }
         });
 
         $(document)
@@ -653,9 +656,13 @@ class WebPet {
         sessionInfo.endTime = new Date().getTime();
         sessionInfo.sessionTime = sessionInfo.endTime - sessionInfo.startTime;
 
-        const params = JSON.stringify(this.$analyticsData);
+        const params = this.$analyticsData;
+        let headers = {
+            type: 'application/x-www-form-urlencoded'
+          };
+        let blob = new Blob([JSON.stringify(params)], headers);
         if (navigator.sendBeacon) {
-            navigator.sendBeacon(this.options.reportUrl, params);
+            navigator.sendBeacon(this.options.reportUrl, blob);
         } else {
             this.$.ajax({
                 url: this.options.reportUrl,
