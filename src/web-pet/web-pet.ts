@@ -9,10 +9,6 @@ interface WebPetOptions {
     name?: string
     //  脚印
     footPrint?: boolean
-    //  页面关闭时是否上报数据
-    report?: boolean
-    //  上报地址
-    reportUrl?: string
     //  首次出现位置
     firstPosition?: string | object
     //  操作
@@ -53,6 +49,14 @@ interface WebPetOptions {
         learn?: {
             url: string
             dataPath?: string
+            [propName: string]: any
+        }
+        //  上报配置
+        report?: {
+            url: string
+            headers: {
+                [propName: string]: any    
+            }
             [propName: string]: any
         }
     }
@@ -133,8 +137,6 @@ class WebPet {
     private options: WebPetOptions = {
         name: "pet",
         footPrint: true,
-        report: false,
-        reportUrl: "",
         firstPosition: "rightLower",
         operate: {
             chat: true
@@ -163,6 +165,12 @@ class WebPet {
             learn: {
                 url: "",
                 method: "POST"
+            },
+            report: {
+                url: "",
+                headers: {
+                    type: 'application/x-www-form-urlencoded'
+                }
             }
         },
         on: {
@@ -516,7 +524,7 @@ class WebPet {
 
         }, 5000);
 
-        options.report && window.addEventListener('load', function () {
+        options.server.report.url && window.addEventListener('load', function () {
             that.recordData();
             if(!window["webPetOnReport"]) {
                 window["webPetOnReport"] = true;
@@ -652,23 +660,23 @@ class WebPet {
      * 上报已收集的数据
      */
     private report() {
-        const sessionInfo = this.$analyticsData.sessionInfo;
+        const data = this.$analyticsData;
+        
+        const sessionInfo = data.sessionInfo;
         sessionInfo.endTime = new Date().getTime();
         sessionInfo.sessionTime = sessionInfo.endTime - sessionInfo.startTime;
 
-        const params = this.$analyticsData;
-        let headers = {
-            type: 'application/x-www-form-urlencoded'
-          };
-        let blob = new Blob([JSON.stringify(params)], headers);
+        const {url, headers} = this.options.server.report;
+
         if (navigator.sendBeacon) {
-            navigator.sendBeacon(this.options.reportUrl, blob);
+            const blob = new Blob([JSON.stringify(data)], headers);
+            navigator.sendBeacon(url, blob);
         } else {
             this.$.ajax({
-                url: this.options.reportUrl,
+                url,
                 method: "POST",
-                contentType: "application/json",
-                data: params
+                contentType: headers.type,
+                data
             });
         }
     }
