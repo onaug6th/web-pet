@@ -9,6 +9,8 @@ interface WebPetOptions {
     name?: string
     //  脚印
     footPrint?: boolean
+    //  是否展示
+    isShow?: boolean,
     //  首次出现位置
     firstPosition?: string | object
     //  操作
@@ -98,8 +100,10 @@ interface analyticsData {
         //  首屏时间
         domReady?: number
         //  总下载时间
-        onLoad?: number
+        loaded?: number
     }
+    //  聊天信息
+    chatInfo?: {}
 }
 
 class WebPet {
@@ -137,6 +141,7 @@ class WebPet {
     private options: WebPetOptions = {
         name: "pet",
         footPrint: true,
+        isShow: true,
         firstPosition: "rightLower",
         operate: {
             chat: true
@@ -239,7 +244,10 @@ class WebPet {
 
         this.$container.append(this.$pet, this.$message, this.$menu, this.$operate);
         this.changeStatus("default");
-
+        
+        if(!this.options.isShow) {
+            this.hide(true);
+        }
         return this;
     }
 
@@ -312,6 +320,18 @@ class WebPet {
      */
     private initAnswer(value: string) {
         const server = this.options.server;
+        
+        const question = value;
+
+        let questions: any = localStorage.questions;
+        
+        if(questions) {
+            questions = [...JSON.parse(decodeURIComponent(questions)), question];
+        } else {
+            questions = [question];
+        }
+
+        localStorage.questions = encodeURIComponent(JSON.stringify(questions));
         //  当存在服务端配置
         server.answer.url ? this.answerFromServer(value) : this.answerFromBrowser(value);
     }
@@ -488,11 +508,11 @@ class WebPet {
         //  初始访问时间
         sessionInfo.startTime = timing.navigationStart;
         //  页面来源
-        sessionInfo.refer = document.location.href;
+        sessionInfo.refer = encodeURIComponent(document.location.href);
         //  页面准备时间
         sessionInfo.domReady = timing.domInteractive - timing.navigationStart;
         //  总下载时间
-        sessionInfo.onLoad = timing.loadEventStart - timing.navigationStart;
+        sessionInfo.loaded = timing.loadEventStart - timing.navigationStart;
 
         return this;
     }
@@ -663,8 +683,17 @@ class WebPet {
         const data = this.$analyticsData;
         
         const sessionInfo = data.sessionInfo;
+        //  本次会话结束时间
         sessionInfo.endTime = new Date().getTime();
+        //  计算会话总时长
         sessionInfo.sessionTime = sessionInfo.endTime - sessionInfo.startTime;
+        
+        //  存在聊天内容
+        if(localStorage.questions) {
+            const questions = JSON.parse(decodeURIComponent(localStorage.questions));
+            data.chatInfo = questions;
+            localStorage.questions = "";
+        }
 
         const {url, headers} = this.options.server.report;
 
