@@ -544,7 +544,7 @@ class WebPet {
 
         }, 5000);
 
-        options.server.report.url && window.addEventListener('load', function () {
+        options.server.report.url && (function () {
             that.recordData();
             if(!window["webPetOnReport"]) {
                 window["webPetOnReport"] = true;
@@ -552,7 +552,7 @@ class WebPet {
                     return that.report.call(that);
                 }, false);
             }
-        });
+        })();
 
         $(document)
             //  鼠标移动时
