@@ -1,6 +1,6 @@
 {
   "name": "web-pet",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "a pet for you webpage",
   "repository": "https://github.com/onaug6th/web-pet",
   "main": "dist/webPet.min.js",
