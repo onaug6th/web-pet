@@ -545,10 +545,10 @@ class WebPet {
         }, 5000);
 
         options.server.report.url && (function () {
-            that.recordData();
             if(!window["webPetOnReport"]) {
                 window["webPetOnReport"] = true;
                 window.addEventListener('unload', function () {
+                    that.recordData();
                     return that.report.call(that);
                 }, false);
             }
