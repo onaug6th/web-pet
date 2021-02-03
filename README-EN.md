@@ -1,8 +1,12 @@
 # web-pet
 
+![](./githubImage/webPet.png)
+
 [![npm (scoped)](https://img.shields.io/npm/v/web-pet.svg)](https://www.npmjs.com/package/web-pet)
 
-A cat dozing on the page is responsible for accompanying and guiding users. Record user behavior and device page performance information, and report each statistical information.
+A little cat dozing off on the page, occasionally chatting with users. Responsible for accompanying and guiding users.
+
+~~But its actual function is to record user behavior and device page performance information, and report statistics for each time.~~
 
 English | [简体中文](./README.md)
 

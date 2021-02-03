@@ -1,8 +1,12 @@
 # web-pet
 
+![](./githubImage/webPet.png)
+
 [![npm (scoped)](https://img.shields.io/npm/v/web-pet.svg)](https://www.npmjs.com/package/web-pet)
 
-在页面上打瞌睡的一只小猫咪，负责陪伴和引导用户。记录用户行为和设备页面性能信息，并上报每次的统计信息。
+在页面上打瞌睡的一只小猫咪，偶尔会唠唠嗑和用户聊天。负责陪伴和引导用户。
+
+~~但它的实际作用是记录用户行为和设备页面性能信息，并上报每次的统计信息。~~
 
 简体中文 | [English](./README-EN.md)
 
